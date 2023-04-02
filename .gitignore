@@ -1,0 +1,7 @@
+.idea
+.scala-build
+.bsp
+
+scala-doc
+
+.DS_Store

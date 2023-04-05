@@ -14,3 +14,5 @@
 //> using publish.license "Apache 2.0:http://opensource.org/licenses/Apache-2.0"
 //> using publish.developer "martinhh|Martin Hansen|https://martinhh.github.io/"
 //> using publish.versionControl "github:martinhh/scalacheck-derived"
+//> using publish.repository "central-s01"
+//> using publish.gpgKey "0C040BA69968998D71130D3E6796C3A8035FF011"

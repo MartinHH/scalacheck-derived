@@ -4,6 +4,17 @@ Automatic derivation of [scalacheck](https://github.com/typelevel/scalacheck) `A
 
 This enables automatic derivation for enums, case classes and sealed traits.
 
+## Getting started
+
+Add a (test-)dependency on this project to your project. For example, in a regular (jvm-targeting)
+sbt project:
+
+```
+libraryDependencies ++= Seq(
+  "io.github.martinhh" %% "scalacheck-derived" % "0.1.0" % "test"
+)
+```
+
 ## Usage
 
 There are two ways of using this library. Let's look at them by examples using the following

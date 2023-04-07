@@ -4,6 +4,9 @@ Automatic derivation of [scalacheck](https://github.com/typelevel/scalacheck) `A
 
 This enables automatic derivation for enums, case classes and sealed traits.
 
+This library supports regular scala on jvm, scala-js and scala-native. See
+[version matrix](#version-matrix) for details on versions.
+
 ## Getting started
 
 Add a (test-)dependency on this project to your project. For example, in a regular (jvm-targeting)
@@ -62,7 +65,7 @@ There are a few limitations to the provided mechanism:
 ### Recursive structures
 
 Recursive structures are not supported. Trying derivation with the "fully implicit" approach will
-lead  to a compiler error. Trying derivation with the "derive explicit" approach may even lead to
+lead to a compiler error. Trying derivation with the "derive explicit" approach may even lead to
 an endless loop during generation at runtime(!).
 
 ### Maximal number of successive inlines
@@ -72,6 +75,7 @@ wants to derive an `Arbitrary`, it is possible to hit the compiler's maximum lim
 successive inlines.
 
 In that case, compilation *should* fail with a message saying:
+
 ```
 [error]    |                     Maximal number of successive inlines (32) exceeded,
 [error]    |                     Maybe this is caused by a recursive inline method?
@@ -100,6 +104,15 @@ There are two ways to handle this:
 
 ### Cogens / deriving functions
 
-Derivation of `Cogen` instances is not supported (yet). 
+Derivation of `Cogen` instances is not supported (yet).
 
 This means that you cannot, for example, derive a function of type `LibItem => Int`.
+
+## Version matrix
+
+The following table documents which versions of scalacheck, scala, scala-js and scala-native were
+used for each release:
+
+| scalacheck-derived | scalacheck | scala | scala-js | scala-native | 
+|--------------------|------------|-------|----------|--------------|
+| 0.1.0              | 1.17.0     | 3.2.2 | 1.13.0   | 0.4.12       |

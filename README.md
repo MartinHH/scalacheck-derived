@@ -43,3 +43,52 @@ import org.scalacheck.Arbitrary
 
 given arbLibItem: Arbitrary[LibItem] = deriveArbitrary
 ```
+
+## Limitations
+
+There are a few limitations to the provided mechanism:
+
+### Recursive structures
+
+Recursive structures are not supported. Trying derivation with the "fully implicit" approach will
+lead  to a compiler error. Trying derivation with the "derive explicit" approach may even lead to
+an endless loop during generation at runtime(!).
+
+### Maximal number of successive inlines
+
+The derivation mechanism uses inlining. Depending on the size of the data structure for which one
+wants to derive an `Arbitrary`, it is possible to hit the compiler's maximum limit for number of
+successive inlines.
+
+In that case, compilation *should* fail with a message saying:
+```
+[error]    |                     Maximal number of successive inlines (32) exceeded,
+[error]    |                     Maybe this is caused by a recursive inline method?
+[error]    |                     You can use -Xmax-inlines to change the limit.
+```
+
+However, it may also fail with a less helpful message like this one (where `MyTestSuite` is the
+name of the class in from which derivation was tried from):
+
+```
+[error]     |object GensList cannot be accessed as a member of (ArbitraryDeriving_this : 
+[error]     |  (ArbitraryDeriving_this² : io.github.martinhh.derived.ArbitraryDeriving)
+[error]     |) from class MyTestSuite.
+[error]     |
+[error]     |where:    ArbitraryDeriving_this  is a value in the initializer of value gens
+[error]     |          ArbitraryDeriving_this² is a value in an anonymous function locally defined in class MyTestSuite
+```
+
+#### Workarounds
+
+There are two ways to handle this:
+
+1. use `-Xmax-inlines` compile setting to increase the limit
+2. instead of deriving an `Arbitrary` for the whole structure at once, derive "intermediate"
+   instances for some of its members (and place them into implicit scope).
+
+### Cogens / deriving functions
+
+Derivation of `Cogen` instances is not supported (yet). 
+
+This means that you cannot, for example, derive a function of type `LibItem => Int`.

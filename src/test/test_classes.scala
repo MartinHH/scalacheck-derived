@@ -1,7 +1,10 @@
 package io.github.martinhh
 
 import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.Cogen
+import org.scalacheck.Cogen.perturb
 import org.scalacheck.Gen
+import org.scalacheck.rng.Seed
 
 sealed trait SimpleADT
 
@@ -9,7 +12,30 @@ object SimpleADT:
   val expectedGen: Gen[SimpleADT] =
     Gen.oneOf(Gen.const(SimpleCaseObject), SimpleCaseClass.expectedGen)
 
-case object SimpleCaseObject extends SimpleADT
+  val expectedCogen: Cogen[SimpleADT] =
+    Cogen { (seed, value) =>
+      value match
+        case SimpleCaseObject =>
+          perturb(
+            perturb[SimpleCaseObject.type](
+              seed,
+              SimpleCaseObject
+            )(SimpleCaseObject.expectedCogen),
+            0
+          )
+        case cc: SimpleCaseClass =>
+          perturb(
+            perturb[SimpleCaseClass](
+              seed,
+              cc
+            )(SimpleCaseClass.expectedCogen),
+            1
+          )
+    }
+
+case object SimpleCaseObject extends SimpleADT:
+  val expectedCogen: Cogen[SimpleCaseObject.type] =
+    Cogen.cogenUnit.contramap(_ => ())
 
 case class SimpleCaseClass(x: Int, y: String, z: Double) extends SimpleADT
 
@@ -20,6 +46,23 @@ object SimpleCaseClass:
       y <- arbitrary[String]
       z <- arbitrary[Double]
     } yield SimpleCaseClass(x, y, z)
+
+  val expectedCogen: Cogen[SimpleCaseClass] =
+    Cogen { (seed, value) =>
+      perturb[Unit](
+        perturb[Double](
+          perturb[String](
+            perturb[Int](
+              seed,
+              value.x
+            ),
+            value.y
+          ),
+          value.z
+        ),
+        ()
+      )
+    }
 
 case class CaseClassWithContainers(
   set: Set[Int],
@@ -37,7 +80,27 @@ object CaseClassWithContainers:
       either <- arbitrary[Either[String, Double]]
     } yield CaseClassWithContainers(set, list, option, either)
 
-enum ABC(asChar: Char):
+  val expectedCogen: Cogen[CaseClassWithContainers] =
+    Cogen { (seed, value) =>
+      perturb[Unit](
+        perturb[Either[String, Double]](
+          perturb[Option[String]](
+            perturb[List[Boolean]](
+              perturb[Set[Int]](
+                seed,
+                value.set
+              ),
+              value.list
+            ),
+            value.option
+          ),
+          value.either
+        ),
+        ()
+      )
+    }
+
+enum ABC(val asChar: Char):
   case A extends ABC('A')
   case B extends ABC('B')
   case C extends ABC('C')
@@ -45,6 +108,12 @@ enum ABC(asChar: Char):
 object ABC:
   val expectedGen: Gen[ABC] =
     Gen.oneOf(ABC.A, ABC.B, ABC.C)
+
+  val expectedCogen: Cogen[ABC] =
+    Cogen { (seed, value) =>
+      val ordinal = value.asChar - ABC.A.asChar
+      perturb(perturb(seed, ()), ordinal)
+    }
 
 sealed trait ComplexADTWithNestedMembers
 

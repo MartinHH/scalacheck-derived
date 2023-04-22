@@ -167,7 +167,7 @@ case class MaxCaseClass(
   a1: Int, b1: Int, c1: Int, d1: Int, e1: Int, f1: Int, g1: Int, h1: Int, i1: Int, j1: Int,
   k1: Int, l1: Int, m1: Int, n1: Int, o1: Int, p1: Int, q1: Int, r1: Int, s1: Int, t1: Int,
   u1: Int, v1: Int, w1: Int, x1: Int, y1: Int, z1: Int,
-  a2: Int, b2: Int
+  a2: Int
 )
 // format: on
 

@@ -55,3 +55,13 @@ class ArbitraryDerivingSuite extends munit.FunSuite:
       arb.arbitrary.map(AbstractSubClass.SubclassB.apply)
     equalValues(expectedGen)
   }
+
+  // not a hard requirement (just guarding against accidental worsening by refactoring)
+  test("supports case classes with up to 28 fields (if -Xmax-inlines=32)") {
+    summon[Arbitrary[MaxCaseClass]]
+  }
+
+  // not a hard requirement (just guarding against accidental worsening by refactoring)
+  test("supports enums with up to 25 members (if -Xmax-inlines=32)") {
+    summon[Arbitrary[MaxEnum]]
+  }

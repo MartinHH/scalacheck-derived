@@ -1,5 +1,7 @@
 # scalacheck-derived
 
+[![CI](https://github.com/martinhh/scalacheck-derived/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MartinHH/scalacheck-derived/actions/workflows/ci.yml?query=branch%3Amain) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.martinhh/scalacheck-derived_3/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.martinhh/scalacheck-derived_3)
+
 Automatic derivation of [scalacheck](https://github.com/typelevel/scalacheck) `Arbitrary` instances for Scala 3.
 
 This enables automatic derivation for enums, case classes and sealed traits.

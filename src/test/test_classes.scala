@@ -161,3 +161,16 @@ object ComplexADTWithNestedMembers:
       AbstractSubClass.SubclassB.expectedGen,
       AbstractSubClass.SubclassC.expectedGen
     )
+
+// format: off
+case class MaxCaseClass(
+  a1: Int, b1: Int, c1: Int, d1: Int, e1: Int, f1: Int, g1: Int, h1: Int, i1: Int, j1: Int,
+  k1: Int, l1: Int, m1: Int, n1: Int, o1: Int, p1: Int, q1: Int, r1: Int, s1: Int, t1: Int,
+  u1: Int, v1: Int, w1: Int, x1: Int, y1: Int, z1: Int,
+  a2: Int, b2: Int
+)
+// format: on
+
+enum MaxEnum:
+  case A1, B1, C1, D1, E1, F1, G1, H1, I1, J1, K1, L1, M1, N1, O1, P1, Q1, R1, S1, T1, U1, V1,
+    W1, X1, Y1

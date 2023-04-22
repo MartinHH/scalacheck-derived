@@ -9,48 +9,52 @@ import scala.compiletime.summonFrom
 import scala.compiletime.summonInline
 import scala.deriving.*
 
+private case class Gens[+T](gens: List[Gen[T]]):
+
+  private def list: List[Gen[T]] = gens
+
+  def combine[U >: T](that: Gens[U]): Gens[U] =
+    Gens[U](this.gens ++ that.gens)
+
+  def gen: Gen[T] = gens match
+    case List(gen) => gen
+    case gens      => Gen.choose(0, gens.size - 1).flatMap(i => gens(i))
+
+private object Gens:
+
+  def apply[T](gen: Gen[T]): Gens[T] = Gens(List(gen))
+
+  inline private def tupleInstance[T <: Tuple]: Gens[T] =
+    inline erasedValue[T] match
+      case _: EmptyTuple =>
+        Gens(Gen.const(EmptyTuple.asInstanceOf[T]))
+      case _: (t *: ts) =>
+        val gen: Gen[T] =
+          for {
+            tVal <- summonInline[Arbitrary[t]].arbitrary
+            tsVal <- tupleInstance[ts].gen
+          } yield (tVal *: tsVal).asInstanceOf[T]
+        Gens(gen)
+
+  inline def productInstance[T](p: Mirror.ProductOf[T]): Gens[T] =
+    Gens(tupleInstance[p.MirroredElemTypes].gen.map(p.fromProduct(_)))
+
+  inline def sumInstance[T](s: Mirror.SumOf[T]): Gens[T] =
+    val elems = summonAll[Tuple.Map[s.MirroredElemTypes, Gens]]
+    val elemsList = elems.toList.asInstanceOf[List[Gens[T]]]
+    elemsList.reduce(_.combine(_))
+
+  inline given derived[T]: Gens[T] =
+    summonFrom {
+      case a: Arbitrary[T]        => Gens(a.arbitrary)
+      case s: Mirror.SumOf[T]     => sumInstance(s)
+      case p: Mirror.ProductOf[T] => productInstance(p)
+    }
+
 /**
  * Derivation of `Arbitrary`s.
  */
 private trait ArbitraryDeriving:
-
-  /** Helper for deriving `Gen`s for all subclasses of a "sum" (including sub-traits). */
-  private trait GensList[+T]:
-    def gens: List[Gen[T]]
-
-  private trait LowPriorityGensListGivens {
-
-    /** Fallback for anything that is not a sum. */
-    inline given nonSumGensList[T](using a: Arbitrary[T]): GensList[T] =
-      new GensList[T]:
-        def gens: List[Gen[T]] = List(a.arbitrary)
-  }
-
-  private object GensList extends LowPriorityGensListGivens:
-
-    inline given derived[T](using s: Mirror.SumOf[T]): GensList[T] =
-      val elems = summonAll[Tuple.Map[s.MirroredElemTypes, GensList]]
-      val elemsList = elems.toList.asInstanceOf[List[GensList[T]]]
-      val gs: List[Gen[T]] = elemsList.flatMap(_.gens)
-      new GensList[T]:
-        def gens: List[Gen[T]] = gs
-
-  inline private def arbitrarySum[T](s: Mirror.SumOf[T]): Arbitrary[T] =
-    val gens = summonInline[GensList[T]].gens
-    Arbitrary(Gen.choose(0, gens.size - 1).flatMap(i => gens(i)))
-
-  inline private def genTuple[T <: Tuple]: Gen[T] =
-    inline erasedValue[T] match
-      case _: EmptyTuple =>
-        Gen.const(EmptyTuple.asInstanceOf[T])
-      case _: (t *: ts) =>
-        for {
-          tVal <- summonInline[Arbitrary[t]].arbitrary
-          tsVal <- genTuple[ts]
-        } yield (tVal *: tsVal).asInstanceOf[T]
-
-  inline private def arbitraryProduct[T](p: Mirror.ProductOf[T]): Arbitrary[T] =
-    Arbitrary(genTuple[p.MirroredElemTypes].map(p.fromProduct(_)))
 
   /**
    * Derives an `Arbitrary[T]`, ignoring any `given Arbitrary[T]` that is already in scope.
@@ -63,8 +67,8 @@ private trait ArbitraryDeriving:
    */
   inline def deriveArbitrary[T](using m: Mirror.Of[T]): Arbitrary[T] =
     inline m match
-      case s: Mirror.SumOf[T]     => arbitrarySum(s)
-      case p: Mirror.ProductOf[T] => arbitraryProduct(p)
+      case s: Mirror.SumOf[T]     => Arbitrary(Gens.sumInstance(s).gen)
+      case p: Mirror.ProductOf[T] => Arbitrary(Gens.productInstance(p).gen)
 
   /**
    * Resolves an `Arbitrary[T]`, using existing given instances or falling back to derivation.
@@ -82,8 +86,6 @@ private trait ArbitraryDeriving:
    * If you intend to derive `Arbitrary`-instances in that way, use `deriveArbitrary` instead.
    */
   inline given anyGivenArbitrary[T]: Arbitrary[T] =
-    summonFrom {
-      case a: Arbitrary[T]        => a
-      case s: Mirror.SumOf[T]     => arbitrarySum(s)
-      case p: Mirror.ProductOf[T] => arbitraryProduct(p)
+    summonFrom { case o: Gens[T] =>
+      Arbitrary(o.gen)
     }

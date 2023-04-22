@@ -57,7 +57,7 @@ class ArbitraryDerivingSuite extends munit.FunSuite:
   }
 
   // not a hard requirement (just guarding against accidental worsening by refactoring)
-  test("supports case classes with up to 28 fields (if -Xmax-inlines=32)") {
+  test("supports case classes with up to 27 fields (if -Xmax-inlines=32)") {
     summon[Arbitrary[MaxCaseClass]]
   }
 

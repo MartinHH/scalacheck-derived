@@ -4,10 +4,7 @@ import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Cogen
 import org.scalacheck.Gen
-import org.scalacheck.Gen.Parameters
 import org.scalacheck.Prop
-import org.scalacheck.Prop.AnyOperators
-import org.scalacheck.Prop.propBoolean
 import org.scalacheck.rng.Seed
 
 class CogenDerivingSuite extends munit.ScalaCheckSuite:

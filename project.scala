@@ -3,6 +3,10 @@
 //> using lib "org.scalacheck::scalacheck::1.17.0"
 //> using jvm "17"
 
+//> using option "-Xfatal-warnings"
+//> using option "-Wunused:all"
+//> using test.option "-Wunused:imports"
+
 //> using jsVersion "1.13.0"
 //> using nativeVersion "0.4.12"
 

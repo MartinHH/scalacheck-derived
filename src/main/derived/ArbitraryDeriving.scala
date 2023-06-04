@@ -11,8 +11,6 @@ import scala.deriving.*
 
 private case class Gens[+T](gens: List[Gen[T]]):
 
-  private def list: List[Gen[T]] = gens
-
   def combine[U >: T](that: Gens[U]): Gens[U] =
     Gens[U](this.gens ++ that.gens)
 

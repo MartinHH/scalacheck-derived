@@ -1,7 +1,6 @@
 package io.github.martinhh
 
 import org.scalacheck.Arbitrary
-import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import org.scalacheck.Gen.Parameters
 import org.scalacheck.rng.Seed

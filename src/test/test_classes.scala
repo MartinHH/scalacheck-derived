@@ -4,7 +4,6 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Cogen
 import org.scalacheck.Cogen.perturb
 import org.scalacheck.Gen
-import org.scalacheck.rng.Seed
 
 sealed trait SimpleADT
 

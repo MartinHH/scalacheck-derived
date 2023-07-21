@@ -49,5 +49,15 @@ class CogenDerivingSuite extends munit.ScalaCheckSuite:
     // proven because it compiles
   }
 
+  // (should support as least as many fields as ArbitraryDeriving)
+  test("supports case classes with up to 27 fields (if -Xmax-inlines=32)") {
+    summon[Cogen[MaxCaseClass]]
+  }
+
+  // (should support as least as many fields as ArbitraryDeriving)
+  test("supports enums with up to 25 members (if -Xmax-inlines=32)") {
+    summon[Cogen[MaxEnum]]
+  }
+
 object CogenDerivingSuite:
   private given arbSeed: Arbitrary[Seed] = Arbitrary(arbitrary[Long].map(Seed.apply))

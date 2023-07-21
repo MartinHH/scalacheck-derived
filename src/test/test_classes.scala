@@ -4,6 +4,7 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Cogen
 import org.scalacheck.Cogen.perturb
 import org.scalacheck.Gen
+import org.scalacheck.Shrink
 
 sealed trait SimpleADT
 
@@ -30,6 +31,15 @@ object SimpleADT:
             )(SimpleCaseClass.expectedCogen),
             1
           )
+    }
+
+  @annotation.nowarn("msg=Stream .* is deprecated")
+  val expectedShrink: Shrink[SimpleADT] =
+    Shrink {
+      case SimpleCaseObject =>
+        Stream.empty
+      case scc: SimpleCaseClass =>
+        SimpleCaseClass.expectedShrink.shrink(scc)
     }
 
 case object SimpleCaseObject extends SimpleADT:
@@ -62,6 +72,13 @@ object SimpleCaseClass:
         ()
       )
     }
+
+  val expectedShrink: Shrink[SimpleCaseClass] =
+    given shrinkTuple: Shrink[(Int, String, Double)] = Shrink.shrinkTuple3
+    Shrink.xmap[(Int, String, Double), SimpleCaseClass](
+      SimpleCaseClass.apply.tupled(_),
+      a => (a.x, a.y, a.z)
+    )
 
 case class CaseClassWithContainers(
   set: Set[Int],
@@ -114,6 +131,10 @@ object ABC:
       perturb(perturb(seed, ()), ordinal)
     }
 
+  @annotation.nowarn("msg=Stream .* is deprecated")
+  val expectedShrink: Shrink[ABC] =
+    Shrink(_ => Stream.empty)
+
 sealed trait ComplexADTWithNestedMembers
 
 case object AnotherCaseObject extends ComplexADTWithNestedMembers
@@ -160,6 +181,23 @@ object ComplexADTWithNestedMembers:
       AbstractSubClass.SubclassB.expectedGen,
       AbstractSubClass.SubclassC.expectedGen
     )
+
+case class HasGivenInstances(x: Int)
+
+object HasGivenInstances:
+
+  // this is a nonsense-implementation, only here to prove that it takes precedence
+  // over derivation (and over `Shrink.shrinkAny`):
+  @annotation.nowarn("msg=Stream .* is deprecated")
+  given specialHasGivenInstancesShrink: Shrink[HasGivenInstances] = Shrink { hgi =>
+    (1 to 3).map(i => HasGivenInstances(hgi.x + i)).toStream
+  }
+
+case class HasMemberThatHasGivenInstances(member: HasGivenInstances)
+
+object HasMemberThatHasGivenInstances:
+  val expectedShrink: Shrink[HasMemberThatHasGivenInstances] =
+    Shrink.xmap(HasMemberThatHasGivenInstances.apply, _.member)
 
 // format: off
 case class MaxCaseClass(

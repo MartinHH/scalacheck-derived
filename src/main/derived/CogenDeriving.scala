@@ -33,9 +33,7 @@ trait CogenDeriving:
         Cogen.cogenUnit.contramap[T](_ => ())
 
   inline private def cogenProduct[T](p: Mirror.ProductOf[T]): Cogen[T] =
-    cogenTuple[p.MirroredElemTypes].contramap[T] { t =>
-      Tuple.fromProduct(t.asInstanceOf[Product]).asInstanceOf[p.MirroredElemTypes]
-    }
+    cogenTuple[p.MirroredElemTypes].contramap[T](productToMirroredElemTypes(p)(_))
 
   inline def deriveCogen[T](using m: Mirror.Of[T]): Cogen[T] =
     inline m match

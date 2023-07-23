@@ -5,8 +5,8 @@ import scala.quoted.*
 /**
  * Implementation of [[isShrinkAnyMacro]].
  */
-private def isShrinkAny[T](using Type[T])(using q: Quotes): Expr[Boolean] =
-  import q.reflect.*
+private def isShrinkAny[T](using Type[T])(using Quotes): Expr[Boolean] =
+  import quotes.reflect.*
   Implicits.search(TypeRepr.of[org.scalacheck.Shrink[T]]) match
     case is: ImplicitSearchSuccess =>
       Expr(is.tree.asExpr.matches('{ org.scalacheck.Shrink.shrinkAny[T] }))

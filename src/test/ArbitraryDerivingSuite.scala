@@ -48,11 +48,19 @@ class ArbitraryDerivingSuite extends munit.FunSuite:
     equalValues(ComplexADTWithNestedMembers.expectedGen)
   }
 
-  test("Gives precedence to any arbitraries in scope") {
+  test("Gives precedence to any arbitraries in local scope") {
     given arb: Arbitrary[SimpleADT] = Arbitrary(SimpleCaseClass.expectedGen)
     val expectedGen: Gen[AbstractSubClass.SubclassB] =
       arb.arbitrary.map(AbstractSubClass.SubclassB.apply)
     equalValues(expectedGen)
+  }
+
+  test("given derivation does not take precedence over existing givens") {
+    equalValues(HasGivenInstances.specialHasGivenInstancesArbitrary.arbitrary)
+  }
+
+  test("given derivation of child-instances does not take precedence over existing givens") {
+    equalValues(HasMemberThatHasGivenInstances.expectedGen)
   }
 
   // not a hard requirement (just guarding against accidental worsening by refactoring)

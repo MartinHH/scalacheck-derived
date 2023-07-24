@@ -41,6 +41,14 @@ class CogenDerivingSuite extends munit.ScalaCheckSuite:
     equalValues(CaseClassWithContainers.expectedCogen)
   }
 
+  test("given derivation does not take precedence over existing givens") {
+    equalValues(HasGivenInstances.specialHasGivenInstancesCogen)
+  }
+
+  test("given derivation of child-instances does not take precedence over existing givens") {
+    equalValues(HasMemberThatHasGivenInstances.expectedCogen)
+  }
+
   test("enables derivation of Arbitrary instances for functions") {
     val arbFunction1: Arbitrary[ComplexADTWithNestedMembers => ABC] =
       summon

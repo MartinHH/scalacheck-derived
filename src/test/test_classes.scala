@@ -1,5 +1,6 @@
 package io.github.martinhh
 
+import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Cogen
 import org.scalacheck.Cogen.perturb
@@ -186,8 +187,15 @@ case class HasGivenInstances(x: Int)
 
 object HasGivenInstances:
 
-  // this is a nonsense-implementation, only here to prove that it takes precedence
-  // over derivation (and over `Shrink.shrinkAny`):
+  // these are a nonsense-implementations, only here to prove that they takes precedence
+  // over/within derivation:
+
+  given specialHasGivenInstancesArbitrary: Arbitrary[HasGivenInstances] =
+    Arbitrary(Gen.const(HasGivenInstances(42)))
+
+  given specialHasGivenInstancesCogen: Cogen[HasGivenInstances] =
+    Cogen(_.x + 1)
+
   @annotation.nowarn("msg=Stream .* is deprecated")
   given specialHasGivenInstancesShrink: Shrink[HasGivenInstances] = Shrink { hgi =>
     (1 to 3).map(i => HasGivenInstances(hgi.x + i)).toStream
@@ -196,6 +204,23 @@ object HasGivenInstances:
 case class HasMemberThatHasGivenInstances(member: HasGivenInstances)
 
 object HasMemberThatHasGivenInstances:
+
+  val expectedGen: Gen[HasMemberThatHasGivenInstances] =
+    HasGivenInstances.specialHasGivenInstancesArbitrary.arbitrary.map(
+      HasMemberThatHasGivenInstances.apply
+    )
+
+  val expectedCogen: Cogen[HasMemberThatHasGivenInstances] =
+    Cogen { (seed, value) =>
+      perturb[Unit](
+        perturb[HasGivenInstances](
+          seed,
+          value.member
+        )(using HasGivenInstances.specialHasGivenInstancesCogen),
+        ()
+      )
+    }
+
   val expectedShrink: Shrink[HasMemberThatHasGivenInstances] =
     Shrink.xmap(HasMemberThatHasGivenInstances.apply, _.member)
 

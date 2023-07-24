@@ -31,11 +31,11 @@ class ShrinkDerivingSuite extends munit.ScalaCheckSuite:
     equalValues(ABC.expectedShrink)
   }
 
-  property("derivation does not take precedence over existing givens") {
+  property("given derivation does not take precedence over existing givens") {
     equalValues(HasGivenInstances.specialHasGivenInstancesShrink)
   }
 
-  property("derivation of child-instances does not take precedence over existing givens") {
+  property("given derivation of child-instances does not take precedence over existing givens") {
     equalValues(HasMemberThatHasGivenInstances.expectedShrink)
   }
 

@@ -16,7 +16,7 @@ sbt project:
 
 ```
 libraryDependencies ++= Seq(
-  "io.github.martinhh" %% "scalacheck-derived" % "0.2.0" % "test"
+  "io.github.martinhh" %% "scalacheck-derived" % "0.3.0" % "test"
 )
 ```
 

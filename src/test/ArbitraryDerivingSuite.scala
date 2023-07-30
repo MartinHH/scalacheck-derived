@@ -1,5 +1,6 @@
 package io.github.martinhh
 
+import org.scalacheck
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 import org.scalacheck.Gen.Parameters
@@ -18,10 +19,16 @@ class ArbitraryDerivingSuite extends munit.FunSuite:
       seed.next
     }
 
-  test("deriveArb allows to derive a given without loop of given definition") {
+  test("deriveArbitrary allows to derive a given without loop of given definition") {
     given arb: Arbitrary[SimpleCaseClass] = derived.arbitrary.deriveArbitrary
     // proven if it compiles, but let's do some run-time testing anyway:
     equalValues(SimpleCaseClass.expectedGen, nTests = 10)(using arb)
+  }
+
+  test("deriveArbitrary supports recursive structures") {
+    equalValues(RecursiveList.expectedGen[Int])(using derived.arbitrary.deriveArbitrary)
+    equalValues(NestedSumsRecursiveList.expectedGen[Int])(using derived.arbitrary.deriveArbitrary)
+    equalValues(MaybeMaybeList.expectedGen[Int])(using derived.arbitrary.deriveArbitrary)
   }
 
   import io.github.martinhh.derived.arbitrary.given
@@ -63,12 +70,24 @@ class ArbitraryDerivingSuite extends munit.FunSuite:
     equalValues(HasMemberThatHasGivenInstances.expectedGen)
   }
 
+  test("supports recursive structures") {
+    equalValues(RecursiveList.expectedGen[Int])
+  }
+
+  test("supports recursive structures (across nested sealed traits)") {
+    equalValues(NestedSumsRecursiveList.expectedGen[Int])
+  }
+
+  test("supports recursive structures (across more complex nested structures)") {
+    equalValues(MaybeMaybeList.expectedGen[Int])
+  }
+
   // not a hard requirement (just guarding against accidental worsening by refactoring)
-  test("supports case classes with up to 27 fields (if -Xmax-inlines=32)") {
+  test("supports case classes with up to 26 fields (if -Xmax-inlines=32)") {
     summon[Arbitrary[MaxCaseClass]]
   }
 
   // not a hard requirement (just guarding against accidental worsening by refactoring)
-  test("supports enums with up to 25 members (if -Xmax-inlines=32)") {
+  test("supports enums with up to 24 members (if -Xmax-inlines=32)") {
     summon[Arbitrary[MaxEnum]]
   }

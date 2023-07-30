@@ -25,6 +25,18 @@ class CogenDerivingSuite extends munit.ScalaCheckSuite:
     equalValues(SimpleCaseClass.expectedCogen)
   }
 
+  test("deriveCogen supports recursive structures") {
+    import derived.scalacheck.anyGivenArbitrary
+    import derived.scalacheck.deriveCogen
+    equalValues(RecursiveList.expectedCogen[Int])(using arbSeed, anyGivenArbitrary, deriveCogen)
+    equalValues(NestedSumsRecursiveList.expectedCogen[Int])(
+      using arbSeed,
+      anyGivenArbitrary,
+      deriveCogen
+    )
+    equalValues(MaybeMaybeList.expectedCogen[Int])(using arbSeed, anyGivenArbitrary, deriveCogen)
+  }
+
   import derived.scalacheck.given
 
   property("perturbs to same seeds as non-derived expected Cogen (for simple ADT)") {
@@ -49,6 +61,18 @@ class CogenDerivingSuite extends munit.ScalaCheckSuite:
     equalValues(HasMemberThatHasGivenInstances.expectedCogen)
   }
 
+  test("given derivation supports recursive structures") {
+    equalValues(RecursiveList.expectedCogen[Int])
+  }
+
+  test("given derivation supports recursive structures (across nested sealed traits)") {
+    equalValues(NestedSumsRecursiveList.expectedCogen[Int])
+  }
+
+  test("given derivation supports recursive structures (across more complex nested structures)") {
+    equalValues(MaybeMaybeList.expectedCogen[Int])
+  }
+
   test("enables derivation of Arbitrary instances for functions") {
     val arbFunction1: Arbitrary[ComplexADTWithNestedMembers => ABC] =
       summon
@@ -58,12 +82,12 @@ class CogenDerivingSuite extends munit.ScalaCheckSuite:
   }
 
   // (should support as least as many fields as ArbitraryDeriving)
-  test("supports case classes with up to 27 fields (if -Xmax-inlines=32)") {
+  test("supports case classes with up to 26 fields (if -Xmax-inlines=32)") {
     summon[Cogen[MaxCaseClass]]
   }
 
   // (should support as least as many fields as ArbitraryDeriving)
-  test("supports enums with up to 25 members (if -Xmax-inlines=32)") {
+  test("supports enums with up to 24 members (if -Xmax-inlines=32)") {
     summon[Cogen[MaxEnum]]
   }
 

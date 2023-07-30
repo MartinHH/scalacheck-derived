@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/martinhh/scalacheck-derived/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MartinHH/scalacheck-derived/actions/workflows/ci.yml?query=branch%3Amain) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.martinhh/scalacheck-derived_3/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.martinhh/scalacheck-derived_3)
 
-Automatic derivation of [scalacheck](https://github.com/typelevel/scalacheck) `Arbitrary` instances for Scala 3.
+Automatic derivation of [scalacheck](https://github.com/typelevel/scalacheck) `Arbitrary` (and `Cogen` and `Shrink`) instances for Scala 3.
 
 This enables automatic derivation for enums, case classes and sealed traits.
 
@@ -60,6 +60,15 @@ import org.scalacheck.Arbitrary
 given arbLibItem: Arbitrary[LibItem] = deriveArbitrary
 ```
 
+### Deriving `Shrink`-instances
+
+Since there is a default/fallback (non-shrinking) `Shrink` instance provided by scalacheck for any type and since
+derivation may cause significant compile-time overhead, derivation of `Shrink` instances is optional.
+
+If you feel the need to derive `Shrink` instances, you can do so by either importing 
+`io.github.martinhh.derived.shrink.given` (for "fully implicit" derivation) or by using
+`io.github.martinhh.derived.shrink.deriveShrink`.
+
 ## Limitations
 
 There are a few limitations to the provided mechanism:
@@ -99,5 +108,6 @@ used for each release:
 
 | scalacheck-derived | scalacheck | scala | scala-js | scala-native | 
 |--------------------|------------|-------|----------|--------------|
+| 0.3.0              | 1.17.0     | 3.3.0 | 1.13.0   | 0.4.14       |
 | 0.2.0              | 1.17.0     | 3.2.2 | 1.13.0   | 0.4.12       |
 | 0.1.0              | 1.17.0     | 3.2.2 | 1.13.0   | 0.4.12       |

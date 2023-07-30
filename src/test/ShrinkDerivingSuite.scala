@@ -1,7 +1,6 @@
 package io.github.martinhh
 
-import io.github.martinhh.derived.scalacheck.given
-import io.github.martinhh.derived.shrink.given
+import io.github.martinhh.derived.arbitrary.given
 import io.github.martinhh.derived.shrink.deriveShrink
 
 import org.scalacheck.Arbitrary
@@ -18,6 +17,27 @@ class ShrinkDerivingSuite extends munit.ScalaCheckSuite:
     Prop.forAll { (t: T) =>
       assertEquals(derivedShrink.shrink(t).take(take), expectedShrink.shrink(t).take(take))
     }
+
+  test("shrinks to empty Stream for EmptyTuple") {
+    assertEquals(deriveShrink[EmptyTuple].shrink(EmptyTuple), Stream.empty)
+  }
+
+  property("deriveShrink supports recursive structures") {
+    equalValues(RecursiveList.expectedShrink[Int])(
+      using anyGivenArbitrary,
+      deriveShrink[RecursiveList[Int]]
+    ) &&
+    equalValues(NestedSumsRecursiveList.expectedShrink[Int])(
+      using anyGivenArbitrary,
+      deriveShrink[NestedSumsRecursiveList[Int]]
+    ) &&
+    equalValues(MaybeMaybeList.expectedShrink[Int])(
+      using anyGivenArbitrary,
+      deriveShrink[MaybeMaybeList[Int]]
+    )
+  }
+
+  import io.github.martinhh.derived.shrink.given
 
   property("shrinks to the same values as non-derived expected Shrink (for simple case class)") {
     equalValues(SimpleCaseClass.expectedShrink)
@@ -39,16 +59,26 @@ class ShrinkDerivingSuite extends munit.ScalaCheckSuite:
     equalValues(HasMemberThatHasGivenInstances.expectedShrink)
   }
 
-  test("shrinks to empty Stream for EmptyTuple") {
-    assertEquals(deriveShrink[EmptyTuple].shrink(EmptyTuple), Stream.empty)
+  property("supports recursive structures") {
+    equalValues(RecursiveList.expectedShrink[Int])
   }
 
-  // (should support as least as many fields as ArbitraryDeriving)
-  test("supports case classes with up to 27 fields (if -Xmax-inlines=32)") {
-    summon[Shrink[MaxCaseClass]]
+  property("supports recursive structures (across nested sealed traits)") {
+    equalValues(NestedSumsRecursiveList.expectedShrink[Int])
   }
 
-  // (should support as least as many fields as ArbitraryDeriving)
-  test("supports enums with up to 25 members (if -Xmax-inlines=32)") {
-    summon[Shrink[MaxEnum]]
+  property("supports recursive structures (across more complex nested structures)") {
+    equalValues(MaybeMaybeList.expectedShrink[Int])
+  }
+
+  // seems there is no feasible way to get up to par with ArbitraryDeriving, so this is just a
+  // guard against making things even worse
+  test("supports case classes with up to 25 fields (if -Xmax-inlines=32)") {
+    summon[Shrink[MaxShrinkableCaseClass]]
+  }
+
+  // seems there is no feasible way to get up to par with ArbitraryDeriving, so this is just a
+  // guard against making things even worse
+  test("supports enums with up to 23 members (if -Xmax-inlines=32)") {
+    summon[Shrink[MaxShrinkableEnum]]
   }

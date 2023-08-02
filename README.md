@@ -71,13 +71,7 @@ If you feel the need to derive `Shrink` instances, you can do so by either impor
 
 ## Limitations
 
-There are a few limitations to the provided mechanism:
-
-### Recursive structures
-
-Recursive structures are not supported. Trying derivation with the "fully implicit" approach will
-lead to a compiler error. Trying derivation with the "derive explicit" approach may even lead to
-an endless loop during generation at runtime(!).
+There are limitations to the provided mechanism:
 
 ### Maximal number of successive inlines
 
@@ -97,7 +91,7 @@ In that case, compilation will fail with a message like this one:
 
 There are two ways to handle this:
 
-1. use `-Xmax-inlines` compile setting to increase the limit
+1. use `-Xmax-inlines` compiler setting to increase the limit
 2. instead of deriving an `Arbitrary` for the whole structure at once, derive "intermediate"
    instances for some of its members (and place them into implicit scope).
 
@@ -108,6 +102,7 @@ used for each release:
 
 | scalacheck-derived | scalacheck | scala | scala-js | scala-native | 
 |--------------------|------------|-------|----------|--------------|
+| 0.4.0              | 1.17.0     | 3.3.0 | 1.13.0   | 0.4.14       |
 | 0.3.0              | 1.17.0     | 3.3.0 | 1.13.0   | 0.4.14       |
 | 0.2.0              | 1.17.0     | 3.2.2 | 1.13.0   | 0.4.12       |
 | 0.1.0              | 1.17.0     | 3.2.2 | 1.13.0   | 0.4.12       |

@@ -1,7 +1,7 @@
 //> using scala "3.3.0"
 //> using platform "jvm", "scala-js", "native"
 //> using lib "org.scalacheck::scalacheck::1.17.0"
-//> using jvm "17"
+//> using jvm "8"
 
 //> using option "-Xfatal-warnings"
 //> using option "-Wunused:all"

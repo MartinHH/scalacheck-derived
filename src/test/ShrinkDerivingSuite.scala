@@ -71,6 +71,10 @@ class ShrinkDerivingSuite extends munit.ScalaCheckSuite:
     equalValues(MaybeMaybeList.expectedShrink[Int])
   }
 
+  property("supports direct recursion") {
+    equalValues(DirectRecursion.expectedShrink)
+  }
+
   // seems there is no feasible way to get up to par with ArbitraryDeriving, so this is just a
   // guard against making things even worse
   test("supports case classes with up to 25 fields (if -Xmax-inlines=32)") {

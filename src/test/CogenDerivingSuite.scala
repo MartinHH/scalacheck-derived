@@ -73,6 +73,10 @@ class CogenDerivingSuite extends munit.ScalaCheckSuite:
     equalValues(MaybeMaybeList.expectedCogen[Int])
   }
 
+  test("given derivation supports direct recursion") {
+    equalValues(DirectRecursion.expectedCogen)
+  }
+
   test("enables derivation of Arbitrary instances for functions") {
     val arbFunction1: Arbitrary[ComplexADTWithNestedMembers => ABC] =
       summon

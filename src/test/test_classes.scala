@@ -471,6 +471,46 @@ object MaybeMaybeList:
       mml => (mml.head, mml.tail)
     )(shrinkTuple)
 
+enum DirectRecursion:
+  case Continue(next: DirectRecursion)
+  case Stop
+
+object DirectRecursion:
+
+  def expectedGen: Gen[DirectRecursion] =
+    Gen.oneOf(Gen.lzy(expectedGen.map(Continue(_))), Gen.const(Stop))
+
+  def expectedCogen: Cogen[DirectRecursion] =
+    Cogen { (seed, value) =>
+      value match
+        case Continue(dr) =>
+          perturb(
+            perturb[Unit](
+              perturb[DirectRecursion](
+                seed,
+                dr
+              )(expectedCogen),
+              ()
+            ),
+            0
+          )
+        case Stop =>
+          perturbSingletonInSum(1, seed, Stop)
+    }
+
+  @annotation.nowarn("msg=Stream .* is deprecated")
+  def expectedShrink: Shrink[DirectRecursion] =
+    Shrink {
+      case c: Continue =>
+        Shrink
+          .xmap[DirectRecursion, Continue](
+            Continue.apply,
+            _.next
+          )(expectedShrink)
+          .shrink(c)
+      case Stop => Stream.empty
+    }
+
 // format: off
 case class MaxCaseClass(
   a1: Int, b1: Int, c1: Int, d1: Int, e1: Int, f1: Int, g1: Int, h1: Int, i1: Int, j1: Int,

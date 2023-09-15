@@ -21,20 +21,24 @@ private object Gens:
 
   def apply[T](gen: Gen[T]): Gens[T] = Gens(List(gen))
 
-  inline private def tupleInstance[T <: Tuple]: Gens[T] =
+  inline private def tupleInstance[T <: Tuple](isHead: Boolean): Gens[T] =
     inline erasedValue[T] match
       case _: EmptyTuple =>
         Gens(Gen.const(EmptyTuple.asInstanceOf[T]))
       case _: (t *: ts) =>
         val gen: Gen[T] =
           for {
-            tVal <- scalacheck.anyGivenArbitrary[t].arbitrary
-            tsVal <- tupleInstance[ts].gen
+            tVal <-
+              // only for the very first member of a product, some extra lazyness is needed to
+              // ensure we don't end up in an endless loop in case of recursive structures
+              if (isHead) Gen.lzy(scalacheck.anyGivenArbitrary[t].arbitrary)
+              else scalacheck.anyGivenArbitrary[t].arbitrary
+            tsVal <- tupleInstance[ts](false).gen
           } yield (tVal *: tsVal).asInstanceOf[T]
         Gens(gen)
 
   inline def productInstance[T](p: Mirror.ProductOf[T]): Gens[T] =
-    Gens(tupleInstance[p.MirroredElemTypes].gen.map(p.fromProduct(_)))
+    Gens(tupleInstance[p.MirroredElemTypes](true).gen.map(p.fromProduct(_)))
 
   private inline def summonSumInstances[T, Elems <: Tuple]: List[Gens[T]] =
     inline erasedValue[Elems] match

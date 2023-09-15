@@ -82,6 +82,10 @@ class ArbitraryDerivingSuite extends munit.FunSuite:
     equalValues(MaybeMaybeList.expectedGen[Int])
   }
 
+  test("supports direct recursion)") {
+    equalValues(DirectRecursion.expectedGen)
+  }
+
   // not a hard requirement (just guarding against accidental worsening by refactoring)
   test("supports case classes with up to 26 fields (if -Xmax-inlines=32)") {
     summon[Arbitrary[MaxCaseClass]]

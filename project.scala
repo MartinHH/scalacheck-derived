@@ -1,4 +1,4 @@
-//> using scala "3.3.0"
+//> using scala "3.3.1"
 //> using platform "jvm", "scala-js", "native"
 //> using lib "org.scalacheck::scalacheck::1.17.0"
 //> using jvm "8"

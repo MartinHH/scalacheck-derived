@@ -31,6 +31,10 @@ class ArbitraryDerivingSuite extends munit.FunSuite:
     equalValues(MaybeMaybeList.expectedGen[Int])(using derived.arbitrary.deriveArbitrary)
   }
 
+  test("deriveArbitrary uses existing given factories (e.g. for Lists)") {
+    equalValues(CaseClassWithListOfCaseClass.expectedGen)(using derived.arbitrary.deriveArbitrary)
+  }
+
   import io.github.martinhh.derived.arbitrary.given
 
   test("Generates same values as non-derived Gen (for simple case class)") {
@@ -68,6 +72,12 @@ class ArbitraryDerivingSuite extends munit.FunSuite:
 
   test("given derivation of child-instances does not take precedence over existing givens") {
     equalValues(HasMemberThatHasGivenInstances.expectedGen)
+  }
+
+  test(
+    "given derivation does not take precedence over existing given factories (e.g. for Lists)"
+  ) {
+    equalValues(CaseClassWithListOfCaseClass.expectedGen)
   }
 
   test("supports recursive structures") {

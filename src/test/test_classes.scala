@@ -3,6 +3,7 @@ package io.github.martinhh
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Cogen
+import org.scalacheck.Cogen.cogenList
 import org.scalacheck.Cogen.perturb
 import org.scalacheck.Gen
 import org.scalacheck.Shrink
@@ -226,6 +227,33 @@ object HasMemberThatHasGivenInstances:
 
   val expectedShrink: Shrink[HasMemberThatHasGivenInstances] =
     Shrink.xmap(HasMemberThatHasGivenInstances.apply, _.member)
+
+// has member that has an existing given (for List[T]) that requires derivation of a dependency
+case class CaseClassWithListOfCaseClass(list: List[SimpleCaseClass])
+
+object CaseClassWithListOfCaseClass:
+  val expectedGen: Gen[CaseClassWithListOfCaseClass] =
+    Gen
+      .containerOf[List, SimpleCaseClass](SimpleCaseClass.expectedGen)
+      .map(CaseClassWithListOfCaseClass(_))
+
+  val expectedCogen: Cogen[CaseClassWithListOfCaseClass] =
+    Cogen { (seed, value) =>
+      perturb[Unit](
+        perturb[List[SimpleCaseClass]](
+          seed,
+          value.list
+        )(cogenList(using SimpleCaseClass.expectedCogen)),
+        ()
+      )
+    }
+
+  val expectedShrink: Shrink[CaseClassWithListOfCaseClass] =
+    given Shrink[SimpleCaseClass] = SimpleCaseClass.expectedShrink
+    Shrink.xmap[List[SimpleCaseClass], CaseClassWithListOfCaseClass](
+      CaseClassWithListOfCaseClass(_),
+      _.list
+    )(using Shrink.shrinkContainer)
 
 // A simple list as most basic test for recursive structures
 enum RecursiveList[+T]:

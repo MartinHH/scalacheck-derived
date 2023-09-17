@@ -63,7 +63,9 @@ private trait ShrinkDeriving:
       }
     Shrink.xmap[p.MirroredElemTypes, T](p.fromTuple(_), productToMirroredElemTypes(p)(_))
 
+  @annotation.nowarn("msg=unused") // needed due to https://github.com/lampepfl/dotty/issues/18564
   inline def deriveShrink[T](using m: Mirror.Of[T]): Shrink[T] =
+    import io.github.martinhh.derived.shrink.anyGivenShrink
     given shrink: Shrink[T] = inline m match
       case s: Mirror.SumOf[T]     => shrinkSum(s)
       case p: Mirror.ProductOf[T] => shrinkProduct(p)

@@ -17,7 +17,7 @@ jobs:
       - name: restore cache
         uses: coursier/cache-action@v6
       - name: setup scala-cli
-        uses: VirtusLab/scala-cli-setup@v1.0.2
+        uses: VirtusLab/scala-cli-setup@v1.0.4
       - name: test jvm
         run: scala-cli --power test .
       - name: test js

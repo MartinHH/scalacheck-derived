@@ -14,9 +14,16 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: coursier/cache-action@v6
-      - uses: VirtusLab/scala-cli-setup@v1.0.2
-      - run: scala-cli --power test .
+      - name: restore cache
+        uses: coursier/cache-action@v6
+      - name: setup scala-cli
+        uses: VirtusLab/scala-cli-setup@v1.0.2
+      - name: test jvm
+        run: scala-cli --power test .
+      - name: test js
+        run: scala-cli --power test --js .
+      - name: test native
+        run: scala-cli --power test --native .
   format:
     runs-on: "ubuntu-latest"
     steps:

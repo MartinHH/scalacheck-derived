@@ -1,7 +1,10 @@
 //> using scala "3.3.1"
 //> using platform "jvm", "scala-js", "native"
-//> using lib "org.scalacheck::scalacheck::1.17.0"
 //> using jvm "8"
+
+//> using dep "org.scalacheck::scalacheck::1.17.0"
+//> using test.dep "org.scalameta::munit::1.0.0-M10"
+//> using test.dep "org.scalameta::munit-scalacheck::1.0.0-M10"
 
 //> using option "-Xfatal-warnings"
 //> using option "-Wunused:all"

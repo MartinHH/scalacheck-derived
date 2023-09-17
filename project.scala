@@ -7,7 +7,7 @@
 //> using option "-Wunused:all"
 //> using test.option "-Wunused:imports"
 
-//> using jsVersion "1.13.0"
+//> using jsVersion "1.13.2"
 //> using nativeVersion "0.4.15"
 
 //> using publish.organization "io.github.martinhh"

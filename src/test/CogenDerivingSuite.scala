@@ -37,6 +37,16 @@ class CogenDerivingSuite extends munit.ScalaCheckSuite:
     equalValues(MaybeMaybeList.expectedCogen[Int])(using arbSeed, anyGivenArbitrary, deriveCogen)
   }
 
+  test("deriveCogen uses existing given factories (e.g. for Lists)") {
+    import derived.scalacheck.anyGivenArbitrary
+    import derived.scalacheck.deriveCogen
+    equalValues(CaseClassWithListOfCaseClass.expectedCogen)(
+      using arbSeed,
+      anyGivenArbitrary,
+      deriveCogen
+    )
+  }
+
   import derived.scalacheck.given
 
   property("perturbs to same seeds as non-derived expected Cogen (for simple ADT)") {
@@ -59,6 +69,12 @@ class CogenDerivingSuite extends munit.ScalaCheckSuite:
 
   test("given derivation of child-instances does not take precedence over existing givens") {
     equalValues(HasMemberThatHasGivenInstances.expectedCogen)
+  }
+
+  test(
+    "given derivation does not take precedence over existing given factories (e.g. for Lists)"
+  ) {
+    equalValues(CaseClassWithListOfCaseClass.expectedCogen)
   }
 
   test("given derivation supports recursive structures") {

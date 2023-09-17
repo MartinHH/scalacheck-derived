@@ -37,6 +37,13 @@ class ShrinkDerivingSuite extends munit.ScalaCheckSuite:
     )
   }
 
+  test("deriveShrink uses existing given factories (e.g. for Lists)") {
+    equalValues(CaseClassWithListOfCaseClass.expectedShrink)(
+      using anyGivenArbitrary,
+      derived.shrink.deriveShrink
+    )
+  }
+
   import io.github.martinhh.derived.shrink.given
 
   property("shrinks to the same values as non-derived expected Shrink (for simple case class)") {
@@ -57,6 +64,12 @@ class ShrinkDerivingSuite extends munit.ScalaCheckSuite:
 
   property("given derivation of child-instances does not take precedence over existing givens") {
     equalValues(HasMemberThatHasGivenInstances.expectedShrink)
+  }
+
+  test(
+    "given derivation does not take precedence over existing given factories (e.g. for Lists)"
+  ) {
+    equalValues(CaseClassWithListOfCaseClass.expectedShrink)
   }
 
   property("supports recursive structures") {

@@ -98,7 +98,11 @@ private trait ArbitraryDeriving:
    *   given Arbitrary[Point] = deriveArbitrary
    * }}}
    */
+  @annotation.nowarn("msg=unused") // needed due to https://github.com/lampepfl/dotty/issues/18564
   inline def deriveArbitrary[T](using m: Mirror.Of[T]): Arbitrary[T] =
+    // make derivation available as given (so that dependencies of factories like
+    // Arbitrary.arbContainer can be derived):
+    import scalacheck.anyGivenArbitrary
     inline m match
       case s: Mirror.SumOf[T] =>
         Arbitrary(Gens.sumInstance(s).gen)

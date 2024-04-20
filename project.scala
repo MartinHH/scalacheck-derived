@@ -2,16 +2,16 @@
 //> using platform "jvm", "scala-js", "native"
 //> using jvm "8"
 
-//> using dep "org.scalacheck::scalacheck::1.17.0"
-//> using test.dep "org.scalameta::munit::1.0.0-M10"
-//> using test.dep "org.scalameta::munit-scalacheck::1.0.0-M10"
+//> using dep "org.scalacheck::scalacheck::1.18.0"
+//> using test.dep "org.scalameta::munit::1.0.0-M12"
+//> using test.dep "org.scalameta::munit-scalacheck::1.0.0-M12"
 
 //> using option "-Xfatal-warnings"
 //> using option "-Wunused:all"
 //> using test.option "-Wunused:imports"
 
-//> using jsVersion "1.13.2"
-//> using nativeVersion "0.4.15"
+//> using jsVersion "1.16.0"
+//> using nativeVersion "0.5.1"
 
 //> using publish.organization "io.github.martinhh"
 //> using publish.name "scalacheck-derived"

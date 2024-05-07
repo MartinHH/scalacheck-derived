@@ -1,4 +1,4 @@
-//> using scala "3.3.3"
+//> using scala "3.4.1"
 //> using platform "jvm", "scala-js", "native"
 //> using jvm "8"
 

@@ -10,12 +10,7 @@ import scala.deriving.*
 
 private case class Gens[+T](gens: List[Gen[T]]):
 
-  def combine[U >: T](that: Gens[U]): Gens[U] =
-    Gens[U](this.gens ++ that.gens)
-
-  def gen: Gen[T] = gens match
-    case List(gen) => gen
-    case gens      => Gen.choose(0, gens.size - 1).flatMap(i => gens(i))
+  def gen: Gen[T] = genOneOf(gens)
 
 private object Gens:
 
@@ -63,7 +58,7 @@ private object Gens:
   inline def sumInstance[T](s: Mirror.SumOf[T]): Gens[T] =
     // must be lazy for support of recursive structures
     lazy val elems = summonSumInstances[T, s.MirroredElemTypes]
-    elems.reduce(_.combine(_))
+    elems.reduce((a, b) => Gens(a.gens ++ b.gens))
 
   inline def derive[T](m: Mirror.Of[T]): Gens[T] =
     inline m match

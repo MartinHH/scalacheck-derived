@@ -1,22 +1,11 @@
 package io.github.martinhh
 
 import org.scalacheck.Arbitrary
-import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Cogen
 import org.scalacheck.Gen
-import org.scalacheck.Prop
 import org.scalacheck.rng.Seed
 
-class CogenDerivingSuite extends munit.ScalaCheckSuite:
-
-  private def equalValues[T](
-    expectedCogen: Cogen[T]
-  )(using arbSeed: Arbitrary[Seed], arbT: Arbitrary[T], derivedCogen: Cogen[T]): Prop =
-    Prop.forAll { (s: Seed, t: T) =>
-      assertEquals(derivedCogen.perturb(s, t), expectedCogen.perturb(s, t))
-    }
-
-  import CogenDerivingSuite.arbSeed
+class CogenDerivingSuite extends CogenSuite:
 
   test("deriveCogen allows to derive a given without loop of given definition") {
     given cogen: Cogen[SimpleCaseClass] = derived.scalacheck.deriveCogen
@@ -110,6 +99,3 @@ class CogenDerivingSuite extends munit.ScalaCheckSuite:
   test("supports enums with up to 24 members (if -Xmax-inlines=32)") {
     summon[Cogen[MaxEnum]]
   }
-
-object CogenDerivingSuite:
-  private given arbSeed: Arbitrary[Seed] = Arbitrary(arbitrary[Long].map(Seed.apply))

@@ -5,7 +5,7 @@ import org.scalacheck.Gen
 import org.scalacheck.Gen.Parameters
 import org.scalacheck.rng.Seed
 
-class ArbitrarySuite extends munit.FunSuite:
+trait ArbitrarySuite extends munit.BaseFunSuite:
 
   protected def equalValues[T](
     expectedGen: Gen[T],

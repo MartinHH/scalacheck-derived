@@ -18,6 +18,8 @@ private def unionGens[X: Type](using Quotes): Expr[UnionGens[X]] =
               }.asExprOf[UnionGens[X]]
             case (_, _) =>
               report.errorAndAbort(s"Could not summon UnionGens")
+    case x =>
+      report.errorAndAbort(s"${x.show} is not a union type")
 
 private transparent inline given unionGensMacro[X]: UnionGens[X] =
   ${ unionGens[X] }
@@ -36,7 +38,9 @@ private def unionTypedCogens[X: Type](using Quotes): Expr[UnionTypedCogens[X]] =
                 UnionTypedCogens[X](x.instances ++ y.instances)
               }.asExprOf[UnionTypedCogens[X]]
             case (_, _) =>
-              report.errorAndAbort(s"Could not summon UnionTypedCogens")
+              report.errorAndAbort(s"Could not summon TypedCogens")
+    case x =>
+      report.errorAndAbort(s"${x.show} is not a union type")
 
 private transparent inline given unionTypedCogensMacro[X]: UnionTypedCogens[X] =
   ${ unionTypedCogens[X] }

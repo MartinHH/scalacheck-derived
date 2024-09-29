@@ -11,7 +11,7 @@
 //> using test.option "-Wunused:imports"
 
 //> using jsVersion "1.16.0"
-//> using nativeVersion "0.5.1"
+//> using nativeVersion "0.5.5"
 
 //> using publish.organization "io.github.martinhh"
 //> using publish.name "scalacheck-derived"

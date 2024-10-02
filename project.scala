@@ -3,7 +3,7 @@
 //> using jvm "8"
 
 //> using dep "org.scalacheck::scalacheck::1.18.1"
-//> using test.dep "org.scalameta::munit::1.0.0"
+//> using test.dep "org.scalameta::munit::1.0.2"
 //> using test.dep "org.scalameta::munit-scalacheck::1.0.0"
 
 //> using option "-Xfatal-warnings"

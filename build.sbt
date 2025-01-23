@@ -43,3 +43,6 @@ lazy val core =
       name := "scalacheck-derived",
       description := "A library providing automatic derivation of scalacheck Arbitrary instances for Scala 3."
     )
+
+// do not publish root project
+publish / skip := true

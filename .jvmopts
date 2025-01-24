@@ -1,0 +1,2 @@
+# A little more heap than default
+-Xmx2G

@@ -29,7 +29,7 @@ val sharedSettings = Seq(
   libraryDependencies ++= Seq(
     "org.scalacheck" %%% "scalacheck" % "1.18.1",
     "org.scalameta" %%% "munit" % "1.0.2" % Test,
-    "org.scalameta" %%% "munit-scalacheck" % "1.0.0" % Test
+    "org.scalameta" %%% "munit-scalacheck" % "1.1.0" % Test
   ),
   pomPostProcess := PomPostProcessor.removeScopedDependencies(sLog.value)
 )

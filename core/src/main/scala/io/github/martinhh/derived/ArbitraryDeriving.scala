@@ -13,9 +13,7 @@ private case class Gens[+T](gens: List[Gen[T]]):
   def combine[U >: T](that: Gens[U]): Gens[U] =
     Gens[U](this.gens ++ that.gens)
 
-  def gen: Gen[T] = gens match
-    case List(gen) => gen
-    case gens      => Gen.choose(0, gens.size - 1).flatMap(i => gens(i))
+  def gen: Gen[T] = genOneOf(gens)
 
 private object Gens:
 

@@ -31,7 +31,7 @@ val sharedSettings = Seq(
     "org.scalameta" %%% "munit" % "1.0.4" % Test,
     "org.scalameta" %%% "munit-scalacheck" % "1.1.0" % Test
   ),
-  pomPostProcess := PomPostProcessor.removeScopedDependencies(sLog.value)
+  pomPostProcess := PomPostProcessor.removeTestDependencies(sLog.value)
 )
 
 lazy val core =

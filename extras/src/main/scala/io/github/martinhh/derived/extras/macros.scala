@@ -7,6 +7,9 @@ import scala.quoted.*
 
 // macros for union based on this StackOverflow answer by Dmytro Mitin:
 // https://stackoverflow.com/a/78567397/6152669
+// (This is not intended to be a legally binding copyright attribution because applying an idea
+// that was expressed in less than 15 lines of example code within similar code that only makes
+// a few straightforward calls to a standard API is not legally significant.)
 
 private def unionGens[X: Type](using q: Quotes): Expr[UnionGens[X]] =
   import q.reflect.*

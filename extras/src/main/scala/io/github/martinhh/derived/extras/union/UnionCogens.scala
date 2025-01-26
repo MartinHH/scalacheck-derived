@@ -1,4 +1,4 @@
-package io.github.martinhh.derived.extras
+package io.github.martinhh.derived.extras.union
 
 import org.scalacheck.Cogen
 import org.scalacheck.rng.Seed
@@ -19,7 +19,7 @@ private def toCogen[A](utc: UnionTypedCogens[A]): Cogen[A] =
 
 private trait UnionCogens:
   transparent inline given unionTypedCogensMacro[X]: UnionTypedCogens[X] =
-    io.github.martinhh.derived.extras.unionTypedCogensMacro
+    io.github.martinhh.derived.extras.union.unionTypedCogensMacro
 
   transparent inline given cogenUnion[X](using inline utc: UnionTypedCogens[X]): Cogen[X] =
     toCogen(utc)

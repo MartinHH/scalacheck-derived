@@ -1,4 +1,4 @@
-package io.github.martinhh.derived.extras
+package io.github.martinhh.derived.extras.literal
 
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen

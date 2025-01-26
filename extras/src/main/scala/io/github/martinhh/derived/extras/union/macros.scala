@@ -1,4 +1,4 @@
-package io.github.martinhh.derived.extras
+package io.github.martinhh.derived.extras.union
 
 import org.scalacheck.Cogen
 import org.scalacheck.Shrink

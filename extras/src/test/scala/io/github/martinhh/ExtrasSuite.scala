@@ -1,6 +1,9 @@
 package io.github.martinhh
 
-import io.github.martinhh.derived.extras.all.given
+import io.github.martinhh.derived.extras.union.scalacheck.given
+import io.github.martinhh.derived.extras.union.shrink.given
+import io.github.martinhh.derived.extras.literal.arbitrary.given
+import io.github.martinhh.derived.arbitrary.given
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Cogen
@@ -35,20 +38,26 @@ class ExtrasSuite extends test.ArbitrarySuite with test.CogenSuite with test.Shr
   }
 
   test("Arbitrary for union of two string literals") {
-    import io.github.martinhh.derived.extras.literal.given
     type TheUnion = "Foo" | "Bar"
     val expectedGen = Gen.oneOf[TheUnion](Gen.const[TheUnion]("Foo"), Gen.const[TheUnion]("Bar"))
     equalArbitraryValues[TheUnion](expectedGen)
   }
 
   test("Arbitrary for union of three string literals") {
-    import io.github.martinhh.derived.extras.literal.given
     type TheUnion = "Foo" | "Bar" | "Baz"
     val expectedGen = Gen.oneOf[TheUnion](
       Gen.const[TheUnion]("Foo"),
       Gen.const[TheUnion]("Bar"),
       Gen.const[TheUnion]("Baz")
     )
+    equalArbitraryValues[TheUnion](expectedGen)
+  }
+
+  test("Arbitrary for union of two case classes") {
+    case class A()
+    case class B()
+    type TheUnion = A | B
+    val expectedGen = Gen.oneOf[TheUnion](Gen.const[TheUnion](A()), Gen.const[TheUnion](B()))
     equalArbitraryValues[TheUnion](expectedGen)
   }
 

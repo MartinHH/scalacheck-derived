@@ -1,4 +1,4 @@
-package io.github.martinhh.derived.extras
+package io.github.martinhh.derived.extras.union
 
 import io.github.martinhh.derived.genOneOf
 
@@ -18,7 +18,7 @@ private object UnionGens:
 private trait UnionArbitraries:
 
   transparent inline given unionGensMacro[X]: UnionGens[X] =
-    io.github.martinhh.derived.extras.unionGensMacro
+    io.github.martinhh.derived.extras.union.unionGensMacro
 
   transparent inline given arbUnion[X](using inline bg: UnionGens[X]): Arbitrary[X] =
     Arbitrary(genOneOf(bg.gens))

@@ -1,4 +1,4 @@
-package io.github.martinhh.derived.extras
+package io.github.martinhh.derived.extras.union
 
 import scala.reflect.TypeTest
 

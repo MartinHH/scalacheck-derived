@@ -1,4 +1,4 @@
-package io.github.martinhh.derived.extras
+package io.github.martinhh.derived.extras.union
 
 import org.scalacheck.Shrink
 
@@ -18,7 +18,7 @@ private trait UnionShrinks:
     }
 
   transparent inline given unionTypedShrinksMacro[X]: UnionTypedShrinks[X] =
-    io.github.martinhh.derived.extras.unionTypedShrinksMacro
+    io.github.martinhh.derived.extras.union.unionTypedShrinksMacro
 
   transparent inline given shrinkUnion[X](using inline uts: UnionTypedShrinks[X]): Shrink[X] =
     toShrink(uts)

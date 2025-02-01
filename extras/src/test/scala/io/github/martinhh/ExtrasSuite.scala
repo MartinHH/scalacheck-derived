@@ -61,6 +61,13 @@ class ExtrasSuite extends test.ArbitrarySuite with test.CogenSuite with test.Shr
     equalArbitraryValues[TheUnion](expectedGen)
   }
 
+  test("arbUnion[x] fails to compile if x is not a union") {
+    assert(compileErrors("arbUnion[Int]").nonEmpty)
+    assert(compileErrors("arbUnion[String]").nonEmpty)
+    // sanity check:
+    assert(compileErrors("arbUnion[Int | String]").isEmpty)
+  }
+
   test("Cogen for union of three types") {
     type TheUnion = String | Int | Boolean
     val expectedCogen: Cogen[TheUnion] =
@@ -94,6 +101,13 @@ class ExtrasSuite extends test.ArbitrarySuite with test.CogenSuite with test.Shr
     equalCogenValues(expectedCogen)
   }
 
+  test("shrinkUnion[x] fails to compile if x is not a union") {
+    assert(compileErrors("shrinkUnion[Int]").nonEmpty)
+    assert(compileErrors("shrinkUnion[String]").nonEmpty)
+    // sanity check:
+    assert(compileErrors("shrinkUnion[Int | String]").isEmpty)
+  }
+
   test("Shrink for union of three types") {
     type TheUnion = String | Int | Boolean
     val expectedShrink: Shrink[TheUnion] =
@@ -107,4 +121,11 @@ class ExtrasSuite extends test.ArbitrarySuite with test.CogenSuite with test.Shr
             Shrink.shrinkAny[Boolean].shrink(b)
       }
     equalShrinkValues(expectedShrink)
+  }
+
+  test("cogenUnion[x] fails to compile if x is not a union") {
+    assert(compileErrors("cogenUnion[Int]").nonEmpty)
+    assert(compileErrors("cogenUnion[String]").nonEmpty)
+    // sanity check:
+    assert(compileErrors("cogenUnion[Int | String]").isEmpty)
   }

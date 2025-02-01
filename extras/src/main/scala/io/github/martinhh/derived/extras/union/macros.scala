@@ -1,7 +1,6 @@
 package io.github.martinhh.derived.extras.union
 
-import org.scalacheck.Cogen
-import org.scalacheck.Shrink
+import org.scalacheck.Arbitrary
 
 import scala.quoted.*
 
@@ -11,47 +10,30 @@ import scala.quoted.*
 // that was expressed in less than 15 lines of example code within similar code that only makes
 // a few straightforward calls to a standard API is not legally significant.)
 
-private def unionGens[X: Type](using q: Quotes): Expr[UnionGens[X]] =
-  import q.reflect.*
-  TypeRepr.of[X] match
-    case OrType(l, r) =>
-      (l.asType, r.asType) match
-        case ('[a], '[b]) =>
-          val exprOpt: Option[Expr[UnionGens[X]]] =
-            for {
-              aGens <- Expr.summon[UnionGens[a]]
-              bGens <- Expr.summon[UnionGens[b]]
-            } yield '{
-              UnionGens($aGens.gens ++ $bGens.gens)
-            }.asExprOf[UnionGens[X]]
-          exprOpt.getOrElse(report.errorAndAbort(s"Could not summon UnionGens"))
-    case x =>
-      report.errorAndAbort(s"${x.show} is not a union type")
-
-private transparent inline given unionGensMacro[X]: UnionGens[X] =
-  ${ unionGens[X] }
-
 private def unionTypedTypeClasses[TC[_]: Type, X: Type](
   using q: Quotes
-): Expr[UnionTypedTypeClasses[TC, X]] =
+): Expr[UnionTypeClasses[TC, X]] =
   import q.reflect.*
   TypeRepr.of[X] match
     case OrType(l, r) =>
       (l.asType, r.asType) match
         case ('[a], '[b]) =>
-          val exprOpt: Option[Expr[UnionTypedTypeClasses[TC, X]]] =
+          val exprOpt: Option[Expr[UnionTypeClasses[TC, X]]] =
             for {
-              aTTC <- Expr.summon[TypedTypeClasses[TC, a]]
-              bTTC <- Expr.summon[TypedTypeClasses[TC, b]]
+              aTTC <- Expr.summon[TypeClasses[TC, a]]
+              bTTC <- Expr.summon[TypeClasses[TC, b]]
             } yield '{
-              UnionTypedTypeClasses[TC, a | b]($aTTC.instances ++ $bTTC.instances)
-            }.asExprOf[UnionTypedTypeClasses[TC, X]]
+              UnionTypeClasses[TC, a | b]($aTTC.instances ++ $bTTC.instances)
+            }.asExprOf[UnionTypeClasses[TC, X]]
           exprOpt.getOrElse(report.errorAndAbort(s"Could not summon instances for Union"))
     case x =>
       report.errorAndAbort(s"${x.show} is not a union type")
 
 private transparent inline given unionTypedCogensMacro[X]: UnionTypedCogens[X] =
-  ${ unionTypedTypeClasses[Cogen, X] }
+  ${ unionTypedTypeClasses[TypedCogen, X] }
 
 private transparent inline given unionTypedShrinksMacro[X]: UnionTypedShrinks[X] =
-  ${ unionTypedTypeClasses[Shrink, X] }
+  ${ unionTypedTypeClasses[TypedShrink, X] }
+
+private transparent inline given unionTypedGensMacro[X]: UnionArbs[X] =
+  ${ unionTypedTypeClasses[Arbitrary, X] }

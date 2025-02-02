@@ -3,6 +3,7 @@ package io.github.martinhh
 import io.github.martinhh.derived.extras.union.scalacheck.given
 import io.github.martinhh.derived.extras.union.shrink.given
 import io.github.martinhh.derived.extras.literal.arbitrary.given
+import io.github.martinhh.derived.extras.literal.cogen.given
 import io.github.martinhh.derived.arbitrary.given
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.arbitrary
@@ -66,6 +67,25 @@ class ExtrasSuite extends test.ArbitrarySuite with test.CogenSuite with test.Shr
     assert(compileErrors("arbUnion[String]").nonEmpty)
     // sanity check:
     assert(compileErrors("arbUnion[Int | String]").isEmpty)
+  }
+
+  test("Cogen for union of literal types") {
+    type TheUnion = 1 | 2
+    val expectedCogen: Cogen[TheUnion] =
+      Cogen { (seed, value) =>
+        value match
+          case 1 =>
+            Cogen.perturb(
+              Cogen.perturb(seed, 0L),
+              0
+            )
+          case 2 =>
+            Cogen.perturb(
+              Cogen.perturb(seed, 0L),
+              1
+            )
+      }
+    equalCogenValues(expectedCogen)
   }
 
   test("Cogen for union of three types") {

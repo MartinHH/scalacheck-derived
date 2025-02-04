@@ -44,16 +44,5 @@ lazy val core =
       description := "A library providing automatic derivation of scalacheck Arbitrary instances for Scala 3."
     )
 
-lazy val extras =
-  crossProject(JSPlatform, JVMPlatform, NativePlatform)
-    .crossType(CrossType.Pure)
-    .in(file("extras"))
-    .dependsOn(core % "compile->compile;test->test")
-    .settings(sharedSettings)
-    .settings(
-      name := "scalacheck-derived-extras",
-      description := "A library providing scalacheck Arbitrary instances for Scala 3 literal and union types."
-    )
-
 // do not publish root project
 publish / skip := true

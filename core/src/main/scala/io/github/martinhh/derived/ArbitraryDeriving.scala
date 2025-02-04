@@ -29,8 +29,8 @@ private object Gens:
             tVal <-
               // only for the very first member of a product, some extra lazyness is needed to
               // ensure we don't end up in an endless loop in case of recursive structures
-              if (isHead) Gen.lzy(scalacheck.anyGivenArbitrary[t].arbitrary)
-              else scalacheck.anyGivenArbitrary[t].arbitrary
+              if (isHead) Gen.lzy(arbitrary.anyGivenArbitrary[t].arbitrary)
+              else arbitrary.anyGivenArbitrary[t].arbitrary
             tsVal <- tupleInstance[ts](false).gen
           } yield (tVal *: tsVal).asInstanceOf[T]
         Gens(gen)
@@ -100,7 +100,7 @@ private trait ArbitraryDeriving:
   inline def deriveArbitrary[T](using m: Mirror.Of[T]): Arbitrary[T] =
     // make derivation available as given (so that dependencies of factories like
     // Arbitrary.arbContainer can be derived):
-    import scalacheck.anyGivenArbitrary
+    import arbitrary.anyGivenArbitrary
     inline m match
       case s: Mirror.SumOf[T] =>
         Arbitrary(Gens.sumInstance(s).gen)

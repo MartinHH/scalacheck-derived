@@ -20,7 +20,7 @@ inThisBuild(
 val productionOnlyOptions = Set("-Xfatal-warnings", "-Wunused:all")
 
 val sharedSettings = Seq(
-  scalaVersion := "3.3.4",
+  scalaVersion := "3.3.5",
   testFrameworks += new TestFramework("munit.Framework"),
   scalacOptions ++= productionOnlyOptions.toSeq,
   Test / scalacOptions ~= { options =>

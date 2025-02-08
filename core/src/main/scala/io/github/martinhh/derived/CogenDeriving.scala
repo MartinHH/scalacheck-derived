@@ -37,19 +37,26 @@ trait CogenDeriving:
       Cogen.perturb[Int](Cogen.perturb[t.type](seed, t), i)
     }
 
-  private inline def cogenTuple[T <: Tuple]: Cogen[T] =
-    inline erasedValue[T] match
-      case _: (t *: ts) =>
-        val cogentT = anyGivenCogen[t]
-        given Cogen[ts] = cogenTuple[ts]
-        Cogen[t *: ts] { (seed, pair) =>
-          Cogen.perturb[ts](Cogen.perturb[t](seed, pair.head)(cogentT), pair.tail)
-        }.asInstanceOf[Cogen[T]]
-      case _: EmptyTuple =>
-        Cogen.cogenUnit.contramap[T](_ => ())
+  // helper for productInstance (runtime-recursion over list with ugly combination of ? and asInstanceOf
+  // is a tradeoff with avoiding recursive inlining)
+  private def tupleInstance(cogens: List[Cogen[?]]): Cogen[? <: Tuple] =
+    cogens match {
+      case xCogen :: tail =>
+        Cogen[Any *: Tuple] { (seed, tpl) =>
+          Cogen.perturb(
+            Cogen.perturb(seed, tpl.head)(using xCogen.asInstanceOf[Cogen[Any]]),
+            tpl.tail
+          )(using tupleInstance(tail).asInstanceOf[Cogen[Tuple]])
+        }
+      case Nil =>
+        Cogen.cogenUnit.contramap(_ => ())
+    }
 
   inline private def cogenProduct[T](p: Mirror.ProductOf[T]): Cogen[T] =
-    cogenTuple[p.MirroredElemTypes].contramap[T](productToMirroredElemTypes(p)(_))
+    val cogens = scala.compiletime.summonAll[Tuple.Map[p.MirroredElemTypes, Cogen]]
+    val cogenTuple = tupleInstance(cogens.toList.asInstanceOf[List[Cogen[?]]])
+      .asInstanceOf[Cogen[p.MirroredElemTypes]]
+    cogenTuple.contramap[T](productToMirroredElemTypes(p)(_))
 
   @annotation.nowarn("msg=unused") // needed due to https://github.com/lampepfl/dotty/issues/18564
   inline def deriveCogen[T](using m: Mirror.Of[T]): Cogen[T] =

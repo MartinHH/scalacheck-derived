@@ -3,6 +3,7 @@ package io.github.martinhh
 import io.github.martinhh.derived.scalacheck.given
 
 import org.scalacheck.Arbitrary
+import org.scalacheck.Cogen
 
 // format: off
 case class BigCaseClass(
@@ -27,4 +28,11 @@ class LargeElemTypesSuite extends munit.BaseFunSuite:
       " than 32 fields (if -Xmax-inlines=32)"
   ) {
     summon[Arbitrary[BigCaseClass]]
+  }
+
+  test(
+    "(with scala 3.4.0 or higher) supports derivation of Cogen instances for case classes with more" +
+      " than 32 fields (if -Xmax-inlines=32)"
+  ) {
+    summon[Cogen[BigCaseClass]]
   }

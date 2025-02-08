@@ -19,8 +19,8 @@ inThisBuild(
 
 val productionOnlyOptions = Set("-Xfatal-warnings", "-Wunused:all")
 
-val sharedSettings = Seq(
-  scalaVersion := "3.3.5",
+def sharedSettings(scalaV: String = "3.3.5") = Seq(
+  scalaVersion := scalaV,
   testFrameworks += new TestFramework("munit.Framework"),
   scalacOptions ++= productionOnlyOptions.toSeq,
   Test / scalacOptions ~= { options =>
@@ -38,7 +38,7 @@ lazy val core =
   crossProject(JSPlatform, JVMPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("core"))
-    .settings(sharedSettings)
+    .settings(sharedSettings())
     .settings(
       name := "scalacheck-derived",
       description := "A library providing automatic derivation of scalacheck Arbitrary instances for Scala 3."
@@ -49,10 +49,22 @@ lazy val extras =
     .crossType(CrossType.Pure)
     .in(file("extras"))
     .dependsOn(core % "compile->compile;test->test")
-    .settings(sharedSettings)
+    .settings(sharedSettings())
     .settings(
       name := "scalacheck-derived-extras",
       description := "A library providing scalacheck Arbitrary instances for Scala 3 literal and union types."
+    )
+
+lazy val test34 =
+  crossProject(JSPlatform, JVMPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .in(file("test34"))
+    .dependsOn(core)
+    .settings(sharedSettings("3.4.0"))
+    .settings(
+      name := "scalacheck-derived-test-3.4.0",
+      description := "A module for tests using a different scala version (i.e. 3.4.0)",
+      publish / skip := true
     )
 
 // do not publish root project

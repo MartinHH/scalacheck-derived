@@ -59,7 +59,7 @@ lazy val test34 =
   crossProject(JSPlatform, JVMPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("test34"))
-    .dependsOn(core)
+    .dependsOn(core % "compile->compile;test->test")
     .settings(sharedSettings("3.4.0"))
     .settings(
       name := "scalacheck-derived-test-3.4.0",

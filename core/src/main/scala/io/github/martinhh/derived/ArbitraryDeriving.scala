@@ -19,24 +19,30 @@ private object Gens:
 
   def apply[T](gen: Gen[T]): Gens[T] = Gens(List(gen))
 
-  inline private def tupleInstance[T <: Tuple](isHead: Boolean): Gens[T] =
-    inline erasedValue[T] match
-      case _: EmptyTuple =>
-        Gens(Gen.const(EmptyTuple.asInstanceOf[T]))
-      case _: (t *: ts) =>
-        val gen: Gen[T] =
-          for {
-            tVal <-
-              // only for the very first member of a product, some extra lazyness is needed to
-              // ensure we don't end up in an endless loop in case of recursive structures
-              if (isHead) Gen.lzy(scalacheck.anyGivenArbitrary[t].arbitrary)
-              else scalacheck.anyGivenArbitrary[t].arbitrary
-            tsVal <- tupleInstance[ts](false).gen
-          } yield (tVal *: tsVal).asInstanceOf[T]
-        Gens(gen)
+  // helper for productInstance (runtime-recursion over list with ugly combination of ? and asInstanceOf
+  // is a tradeoff with avoiding recursive inlining)
+  private def tupleInstance(arbs: List[Arbitrary[?]], isHead: Boolean): Gen[?] =
+    // (only) for the very first member of a product, some extra lazyness is needed to
+    // ensure we don't end up in an endless loop in case of recursive structures
+    def safeGen[A](aArb: Arbitrary[A]): Gen[A] =
+      if (isHead) Gen.lzy(aArb.arbitrary) else aArb.arbitrary
+    arbs match {
+      case xArb :: Nil =>
+        safeGen(xArb).map(x => Tuple.apply(x))
+      case xArb :: tail =>
+        for {
+          x <- safeGen(xArb)
+          tailTuple <- tupleInstance(tail, false)
+        } yield (x *: tailTuple.asInstanceOf[Tuple])
+      case Nil =>
+        Gen.const(EmptyTuple)
+    }
 
   inline def productInstance[T](p: Mirror.ProductOf[T]): Gens[T] =
-    Gens(tupleInstance[p.MirroredElemTypes](true).gen.map(p.fromProduct(_)))
+    val arbs = scala.compiletime.summonAll[Tuple.Map[p.MirroredElemTypes, Arbitrary]]
+    val genTuple = tupleInstance(arbs.toList.asInstanceOf[List[Arbitrary[?]]], true)
+      .asInstanceOf[Gen[p.MirroredElemTypes]]
+    Gens(genTuple.map(p.fromProduct(_)))
 
   private inline def summonSumInstances[T, Elems <: Tuple]: List[Gens[T]] =
     inline erasedValue[Elems] match

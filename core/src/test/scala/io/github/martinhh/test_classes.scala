@@ -303,7 +303,7 @@ object RecursiveList:
           .xmap[(T, RecursiveList[T]), Cns[T]](
             { case (t, ts) => Cns(t, ts) },
             cns => (cns.t, cns.ts)
-          )(Shrink.shrinkTuple2(shrinkT, expectedShrink))
+          )(Shrink.shrinkTuple2(using shrinkT, expectedShrink))
           .shrink(c)
       case Nl => Stream.empty
     }
@@ -363,7 +363,7 @@ object NestedSumsRecursiveList:
           .xmap[(T, NestedSumsRecursiveList[T]), Cns[T]](
             { case (t, ts) => Cns(t, ts) },
             cns => (cns.t, cns.ts)
-          )(Shrink.shrinkTuple2(shrinkT, expectedShrink))
+          )(Shrink.shrinkTuple2(using shrinkT, expectedShrink))
           .shrink(c)
       case Nl => Stream.empty
     }
@@ -493,7 +493,7 @@ object MaybeMaybeList:
 
   def expectedShrink[T](using shrinkT: Shrink[T]): Shrink[MaybeMaybeList[T]] =
     lazy val shrinkTuple: Shrink[(T, MaybeMaybe[MaybeMaybeList[T]])] =
-      Shrink.shrinkTuple2(shrinkT, MaybeMaybe.expectedShrink(expectedShrink))
+      Shrink.shrinkTuple2(using shrinkT, MaybeMaybe.expectedShrink(expectedShrink))
     Shrink.xmap[(T, MaybeMaybe[MaybeMaybeList[T]]), MaybeMaybeList[T]](
       { case (head, tail) => MaybeMaybeList(head, tail) },
       mml => (mml.head, mml.tail)

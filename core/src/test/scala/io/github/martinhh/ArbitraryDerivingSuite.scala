@@ -87,6 +87,10 @@ class ArbitraryDerivingSuite extends test.ArbitrarySuite:
     equalArbitraryValues(DirectRecursion.expectedGen)
   }
 
+  test("even distribution in sealed traits with diamond inheritance".ignore.pending("fix me")) {
+    equalArbitraryValues(SealedDiamond.expectedGen)
+  }
+
   // not a hard requirement (just guarding against accidental worsening by refactoring)
   test("supports case classes with up to 26 fields (if -Xmax-inlines=32)") {
     summon[Arbitrary[MaxCaseClass]]

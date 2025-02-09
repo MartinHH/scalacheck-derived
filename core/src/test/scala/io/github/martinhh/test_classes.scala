@@ -539,6 +539,17 @@ object DirectRecursion:
       case Stop => Stream.empty
     }
 
+sealed trait SealedDiamond
+
+object SealedDiamond:
+  sealed trait SubtraitA extends SealedDiamond
+  sealed trait SubtraitB extends SealedDiamond
+  case object Foo extends SealedDiamond
+  case object Bar extends SubtraitA with SubtraitB
+
+  def expectedGen: Gen[SealedDiamond] =
+    Gen.oneOf(Gen.const(Bar), Gen.const(Foo))
+
 // format: off
 case class MaxCaseClass(
   a1: Int, b1: Int, c1: Int, d1: Int, e1: Int, f1: Int, g1: Int, h1: Int, i1: Int, j1: Int,

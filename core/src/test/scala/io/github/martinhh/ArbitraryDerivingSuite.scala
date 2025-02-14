@@ -87,7 +87,7 @@ class ArbitraryDerivingSuite extends test.ArbitrarySuite:
     equalArbitraryValues(DirectRecursion.expectedGen)
   }
 
-  test("even distribution in sealed traits with diamond inheritance".ignore.pending("fix me")) {
+  test("even distribution in sealed traits with diamond inheritance") {
     equalArbitraryValues(SealedDiamond.expectedGen)
   }
 

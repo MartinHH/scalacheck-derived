@@ -8,8 +8,7 @@ import scala.compiletime.summonFrom
 import scala.compiletime.summonInline
 import scala.deriving.*
 
-private sealed trait Gens[T]:
-  def gen: Gen[T]
+private sealed trait Gens[T]
 
 private case class SumGens[T](gens: List[SingleGen[T]]) extends Gens[T]:
   def gen: Gen[T] = genOneOf(gens.map(_.gen))
@@ -137,9 +136,10 @@ private trait ArbitraryDeriving:
     summonFrom {
       case a: Arbitrary[T] =>
         a
-      case m: Mirror.Of[T] =>
-        // this is a given so that the result of derivation is available during derivation (to
-        // ensure support for recursive structures - this works because givens are lazy)
-        given arb: Arbitrary[T] = Arbitrary(Gens.derive(m).gen)
+      case s: Mirror.SumOf[T] =>
+        given arb: Arbitrary[T] = Arbitrary(Gens.sumInstance(s).gen)
+        arb
+      case p: Mirror.ProductOf[T] =>
+        given arb: Arbitrary[T] = Arbitrary(Gens.productGen(p))
         arb
     }

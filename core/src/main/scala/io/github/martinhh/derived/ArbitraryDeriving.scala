@@ -8,16 +8,18 @@ import scala.compiletime.summonFrom
 import scala.compiletime.summonInline
 import scala.deriving.*
 
-private case class Gens[+T](gens: List[Gen[T]]):
+private sealed trait Gens[+T]:
+  def gens: List[Gen[T]]
 
-  def combine[U >: T](that: Gens[U]): Gens[U] =
-    Gens[U](this.gens ++ that.gens)
+  def gen: Gen[T]
 
+private case class SumGens[+T](gens: List[Gen[T]]) extends Gens[T]:
   def gen: Gen[T] = genOneOf(gens)
 
-private object Gens:
+private case class SingleGen[+T](gen: Gen[T]) extends Gens[T]:
+  def gens: List[Gen[T]] = List(gen)
 
-  def apply[T](gen: Gen[T]): Gens[T] = Gens(List(gen))
+private object Gens:
 
   // helper for productInstance (runtime-recursion over list with ugly combination of ? and asInstanceOf
   // is a tradeoff with avoiding recursive inlining)
@@ -38,11 +40,11 @@ private object Gens:
         Gen.const(EmptyTuple)
     }
 
-  inline def productInstance[T](p: Mirror.ProductOf[T]): Gens[T] =
+  inline def productInstance[T](p: Mirror.ProductOf[T]): SingleGen[T] =
     val arbs = scala.compiletime.summonAll[Tuple.Map[p.MirroredElemTypes, Arbitrary]]
     val genTuple = tupleInstance(arbs.toList.asInstanceOf[List[Arbitrary[?]]], true)
       .asInstanceOf[Gen[p.MirroredElemTypes]]
-    Gens(genTuple.map(p.fromProduct(_)))
+    SingleGen(genTuple.map(p.fromProduct(_)))
 
   private inline def summonSumInstances[T, Elems <: Tuple]: List[Gens[T]] =
     inline erasedValue[Elems] match
@@ -64,10 +66,10 @@ private object Gens:
 
   // if we want to reduce depth of inline calls, this could be a candidate for "manual inlining"
   // (but it's called in three places, so significantly more redundancy for one inline less..)
-  inline def sumInstance[T](s: Mirror.SumOf[T]): Gens[T] =
+  inline def sumInstance[T](s: Mirror.SumOf[T]): SumGens[T] =
     // must be lazy for support of recursive structures
     lazy val elems = summonSumInstances[T, s.MirroredElemTypes]
-    elems.reduce(_.combine(_))
+    SumGens(elems.foldLeft(List.empty[Gen[T]])((acc, g) => acc ++ g.gens))
 
   inline def derive[T](m: Mirror.Of[T]): Gens[T] =
     inline m match
@@ -79,7 +81,7 @@ private object Gens:
   inline given derived[T]: Gens[T] =
     summonFrom {
       case a: Arbitrary[T] =>
-        Gens(a.arbitrary)
+        SingleGen(a.arbitrary)
       // both cases below are coded out (instead of just delegating to derive) to saves us some
       // nested inlining (so that we do not hit the Xmaxinlines limit as quickly)
       case s: Mirror.SumOf[T] =>

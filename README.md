@@ -6,6 +6,9 @@ Automatic derivation of [scalacheck](https://github.com/typelevel/scalacheck) `A
 
 This enables automatic derivation for enums, case classes and sealed traits.
 
+Since version 0.6.0, an additional module also supports automatic derivation for literal and union types - see
+[docs/extras.md](docs/extras.md) for more.
+
 This library supports regular scala on jvm, scala-js and scala-native. See
 [version matrix](#version-matrix) for details on versions.
 
@@ -89,7 +92,12 @@ In that case, compilation will fail with a message like this one:
 
 #### Workarounds
 
-There are two ways to handle this:
+Since version 0.6.0, the derivation mechanism was optimized to leverage certain changes that came to effect
+with Scala 3.4.0 which will drastically reduce the number of recursive inlining for "product types" (i.e. case classes),
+e.g. allowing derivation for case classes with more than 32 members without raising `-Xmax-inlines`.
+You will benefit from these changes if you depend on version 0.6.0 or higher and use Scala 3.4.0 or higher.
+
+If that does not help (or if you are not able to use those versions), there are two ways to handle this:
 
 1. use `-Xmax-inlines` compiler setting to increase the limit
 2. instead of deriving an `Arbitrary` for the whole structure at once, derive "intermediate"

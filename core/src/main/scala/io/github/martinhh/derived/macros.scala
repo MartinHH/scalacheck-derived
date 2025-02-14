@@ -22,3 +22,8 @@ private def isShrinkAny[T](using Type[T])(using Quotes): Expr[Boolean] =
  */
 private inline def isShrinkAnyMacro[T]: Boolean =
   ${ isShrinkAny[T] }
+
+private def typeName[A: Type](using Quotes): Expr[String] =
+  Expr(Type.show[A])
+
+private inline def typeNameMacro[A]: String = ${ typeName[A] }

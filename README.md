@@ -19,7 +19,7 @@ sbt project:
 
 ```
 libraryDependencies ++= Seq(
-  "io.github.martinhh" %% "scalacheck-derived" % "0.5.0" % "test"
+  "io.github.martinhh" %% "scalacheck-derived" % "<version>" % "test"
 )
 ```
 
@@ -110,6 +110,7 @@ used for each release:
 
 | scalacheck-derived | scalacheck | scala | scala-js | scala-native | 
 |--------------------|------------|-------|----------|--------------|
+| 0.6.0              | 1.18.1     | 3.3.5 | 1.18.2   | 0.5.6        |
 | 0.5.0              | 1.18.0     | 3.3.1 | 1.16.0   | 0.5.1        |
 | 0.4.2              | 1.17.0     | 3.3.1 | 1.13.2   | 0.4.15       |
 | 0.4.1              | 1.17.0     | 3.3.0 | 1.13.0   | 0.4.14       |

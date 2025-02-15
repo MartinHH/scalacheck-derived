@@ -49,6 +49,16 @@ class ShrinkDerivingSuite extends test.ShrinkSuite:
     equalShrinkValues(ABC.expectedShrink)
   }
 
+  property("shrinks to the same values as non-derived expected Shrink (for more complex example)") {
+    equalShrinkValues(ComplexADTWithNestedMembers.expectedShrink)
+  }
+
+  property(
+    "shrinks to the same values as non-derived expected Shrink (for diamond inheritance in sealed trait)"
+  ) {
+    equalShrinkValues(SealedDiamond.expectedShrink)
+  }
+
   property("given derivation does not take precedence over existing givens") {
     equalShrinkValues(HasGivenInstances.specialHasGivenInstancesShrink)
   }

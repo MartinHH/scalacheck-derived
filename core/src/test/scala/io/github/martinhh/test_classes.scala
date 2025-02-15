@@ -160,11 +160,26 @@ object AbstractSubClass:
         n <- SimpleCaseClass.expectedGen
       } yield SubclassA(a, b, n)
 
+    val expectedShrink: Shrink[SubclassA] =
+      given Shrink[SimpleCaseClass] = SimpleCaseClass.expectedShrink
+      given shrinkTuple: Shrink[(Int, String, SimpleCaseClass)] = Shrink.shrinkTuple3
+      Shrink.xmap[(Int, String, SimpleCaseClass), SubclassA](
+        SubclassA.apply.tupled(_),
+        a => (a.a, a.b, a.nestedSimple)
+      )
+
   case class SubclassB(nestedSimple: SimpleADT) extends AbstractSubClass[SimpleADT](ABC.B)
 
   object SubclassB:
     val expectedGen: Gen[SubclassB] =
       SimpleADT.expectedGen.map(SubclassB.apply)
+
+    val expectedShrink: Shrink[SubclassB] =
+      given Shrink[SimpleADT] = SimpleADT.expectedShrink
+      Shrink.xmap[SimpleADT, SubclassB](
+        SubclassB(_),
+        _.nestedSimple
+      )
 
   case class SubclassC(c: String, d: Double, anotherLetter: ABC)
     extends AbstractSubClass[SimpleCaseObject.type](ABC.C):
@@ -178,6 +193,14 @@ object AbstractSubClass:
         l <- ABC.expectedGen
       } yield SubclassC(c, d, l)
 
+    val expectedShrink: Shrink[SubclassC] =
+      given Shrink[ABC] = ABC.expectedShrink
+      given shrinkTuple: Shrink[(String, Double, ABC)] = Shrink.shrinkTuple3
+      Shrink.xmap[(String, Double, ABC), SubclassC](
+        SubclassC.apply.tupled(_),
+        a => (a.c, a.d, a.anotherLetter)
+      )
+
 object ComplexADTWithNestedMembers:
   val expectedGen: Gen[ComplexADTWithNestedMembers] =
     Gen.oneOf(
@@ -186,6 +209,18 @@ object ComplexADTWithNestedMembers:
       AbstractSubClass.SubclassB.expectedGen,
       AbstractSubClass.SubclassC.expectedGen
     )
+
+  val expectedShrink: Shrink[ComplexADTWithNestedMembers] =
+    Shrink {
+      case AnotherCaseObject =>
+        Stream.empty[AnotherCaseObject.type]
+      case a: AbstractSubClass.SubclassA =>
+        AbstractSubClass.SubclassA.expectedShrink.shrink(a)
+      case b: AbstractSubClass.SubclassB =>
+        AbstractSubClass.SubclassB.expectedShrink.shrink(b)
+      case c: AbstractSubClass.SubclassC =>
+        AbstractSubClass.SubclassC.expectedShrink.shrink(c)
+    }
 
 case class HasGivenInstances(x: Int)
 
@@ -549,6 +584,12 @@ object SealedDiamond:
 
   def expectedGen: Gen[SealedDiamond] =
     Gen.oneOf(Gen.const(Bar), Gen.const(Foo))
+
+  @annotation.nowarn("msg=Stream .* is deprecated")
+  val expectedShrink: Shrink[SealedDiamond] =
+    Shrink { _ =>
+      Stream.empty[SealedDiamond]
+    }
 
 // format: off
 case class MaxCaseClass(

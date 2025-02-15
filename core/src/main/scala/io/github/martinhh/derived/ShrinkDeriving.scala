@@ -5,7 +5,6 @@ import org.scalacheck.Shrink
 import scala.annotation.tailrec
 import scala.compiletime.constValue
 import scala.compiletime.erasedValue
-import scala.compiletime.ops.int.S
 import scala.compiletime.summonInline
 import scala.compiletime.summonFrom
 import scala.deriving.*
@@ -55,12 +54,12 @@ private trait ShrinkDeriving:
       acc
     } else {
       val shrinkI = shrinks.head
-      val nonEmptyT = t.asInstanceOf[T with NonEmptyTuple]
+      val nonEmptyT = t.asInstanceOf[T & NonEmptyTuple]
       val elemI = nonEmptyT(i)
       val newAcc = acc.lazyAppendedAll(
         shrinkI
           .shrink(elemI)
-          .map(ei => replaceElemI[T with NonEmptyTuple](i, nonEmptyT, ei))
+          .map(ei => replaceElemI[T & NonEmptyTuple](i, nonEmptyT, ei))
       )
       shrinkTuple(i + 1, size, t, newAcc, shrinks.tail)
     }

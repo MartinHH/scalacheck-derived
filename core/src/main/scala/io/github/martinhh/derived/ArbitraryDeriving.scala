@@ -4,6 +4,7 @@ import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 
 import scala.compiletime.erasedValue
+import scala.compiletime.summonAll
 import scala.compiletime.summonFrom
 import scala.compiletime.summonInline
 import scala.deriving.*
@@ -18,6 +19,32 @@ private case class SingleGen[T](tag: Gens.TypeId, gen: Gen[T]) extends Gens[T]
 private object Gens:
 
   type TypeId = String
+
+  // helper typeclass that allows us to use summonAll in derivation for sum-types
+  trait SumInstanceSummoner[T, Elem]:
+    def deriveOrSummonSumInstance: Gens[Elem]
+
+  object SumInstanceSummoner:
+    // factory to avoid "New anonymous class definition will be duplicated at each inline site"
+    def apply[T, Elem](makeGens: => Gens[Elem]): SumInstanceSummoner[T, Elem] =
+      new SumInstanceSummoner[T, Elem]:
+        def deriveOrSummonSumInstance: Gens[Elem] = makeGens
+
+    inline def makeInstance[T, Elem](inline derive: => Gens[Elem]): SumInstanceSummoner[T, Elem] =
+      SumInstanceSummoner {
+        inline erasedValue[Elem] match
+          case _: T =>
+            inline erasedValue[T] match
+              case _: Elem =>
+                endlessRecursionError
+              case _ =>
+                derive
+          case _ =>
+            summonInline[Gens[Elem]]
+      }
+
+    inline given instance[T, Elem]: SumInstanceSummoner[T, Elem] =
+      makeInstance(Gens.derive[Elem](summonInline[Mirror.Of[Elem]]))
 
   // helper for productInstance (runtime-recursion over list with ugly combination of ? and asInstanceOf
   // is a tradeoff with avoiding recursive inlining)
@@ -39,34 +66,17 @@ private object Gens:
     }
 
   inline def productGen[T](p: Mirror.ProductOf[T]): Gen[T] =
-    val arbs = scala.compiletime.summonAll[Tuple.Map[p.MirroredElemTypes, Arbitrary]]
+    val arbs = summonAll[Tuple.Map[p.MirroredElemTypes, Arbitrary]]
     val genTuple = tupleInstance(arbs.toList.asInstanceOf[List[Arbitrary[?]]], true)
       .asInstanceOf[Gen[p.MirroredElemTypes]]
     genTuple.map(p.fromProduct(_))
 
-  private inline def summonSumInstances[T, Elems <: Tuple]: List[Gens[T]] =
-    inline erasedValue[Elems] match
-      case _: (elem *: elems) =>
-        deriveOrSummonSumInstance[T, elem].asInstanceOf[Gens[T]] :: summonSumInstances[T, elems]
-      case _: EmptyTuple =>
-        Nil
-
-  private inline def deriveOrSummonSumInstance[T, Elem]: Gens[Elem] =
-    inline erasedValue[Elem] match
-      case _: T =>
-        inline erasedValue[T] match
-          case _: Elem =>
-            endlessRecursionError
-          case _ =>
-            Gens.derive[Elem](summonInline[Mirror.Of[Elem]])
-      case _ =>
-        summonInline[Gens[Elem]]
-
-  // if we want to reduce depth of inline calls, this could be a candidate for "manual inlining"
-  // (but it's called in three places, so significantly more redundancy for one inline less..)
   inline def sumInstance[T](s: Mirror.SumOf[T]): SumGens[T] =
     // must be lazy for support of recursive structures
-    lazy val elems = summonSumInstances[T, s.MirroredElemTypes]
+    type Summoner[E] = SumInstanceSummoner[T, E]
+    val elems = summonAll[Tuple.Map[s.MirroredElemTypes, Summoner]].toList
+      .asInstanceOf[List[Summoner[T]]]
+      .map(_.deriveOrSummonSumInstance)
     val combined = elems.foldLeft(List.empty[SingleGen[T]]) {
       case (acc, s: SingleGen[T]) => acc :+ s
       case (acc, s: SumGens[T])   => acc ++ s.gens

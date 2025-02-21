@@ -9,17 +9,17 @@ import scala.compiletime.summonInline
 private[martinhh] trait SumInstanceSummoner[T, Elem, TC[_]]:
   def deriveOrSummonSumInstance: TC[Elem]
 
-private[martinhh] object SumInstanceSummoner:
+// abstract implementation for companions of typeclass-specific SumInstanceSummoner
+private[martinhh] trait SumInstanceSummonerCompanion[
+  TC[_],
+  S[T, Elem] <: SumInstanceSummoner[T, Elem, TC]
+]:
+  protected def apply[T, Elem](makeTC: => TC[Elem]): S[T, Elem]
 
-  // factory to avoid "New anonymous class definition will be duplicated at each inline site"
-  def apply[T, Elem, TC[_]](makeGens: => TC[Elem]): SumInstanceSummoner[T, Elem, TC] =
-    new SumInstanceSummoner[T, Elem, TC]:
-      def deriveOrSummonSumInstance: TC[Elem] = makeGens
+  protected inline def derive[Elem]: TC[Elem]
 
-  inline def makeInstance[T, Elem, TC[_]](
-    inline derive: => TC[Elem]
-  ): SumInstanceSummoner[T, Elem, TC] =
-    SumInstanceSummoner {
+  protected inline def makeInstance[T, Elem](inline derive: => TC[Elem]): S[T, Elem] =
+    apply {
       inline erasedValue[Elem] match
         case _: T =>
           inline erasedValue[T] match
@@ -30,3 +30,6 @@ private[martinhh] object SumInstanceSummoner:
         case _ =>
           summonInline[TC[Elem]]
     }
+
+  inline given sumInstanceSummoner[T, Elem]: S[T, Elem] =
+    makeInstance(derive[Elem])

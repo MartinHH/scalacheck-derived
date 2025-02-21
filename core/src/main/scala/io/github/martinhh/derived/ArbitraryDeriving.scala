@@ -16,12 +16,20 @@ private case class SumGens[T](gens: List[SingleGen[T]]) extends Gens[T]:
 
 private case class SingleGen[T](tag: Gens.TypeId, gen: Gen[T]) extends Gens[T]
 
+private trait GensSumInstanceSummoner[T, Elem] extends SumInstanceSummoner[T, Elem, Gens]
+
+private object GensSumInstanceSummoner
+  extends SumInstanceSummonerCompanion[Gens, GensSumInstanceSummoner]:
+  protected def apply[T, Elem](makeGens: => Gens[Elem]): GensSumInstanceSummoner[T, Elem] =
+    new GensSumInstanceSummoner[T, Elem]:
+      def deriveOrSummonSumInstance: Gens[Elem] = makeGens
+
+  override protected inline def derive[Elem]: Gens[Elem] =
+    Gens.derive[Elem](summonInline[Mirror.Of[Elem]])
+
 private object Gens:
 
   type TypeId = String
-
-  inline given sumInstanceSummoner[T, Elem]: SumInstanceSummoner[T, Elem, Gens] =
-    SumInstanceSummoner.makeInstance(Gens.derive[Elem](summonInline[Mirror.Of[Elem]]))
 
   // helper for productInstance (runtime-recursion over list with ugly combination of ? and asInstanceOf
   // is a tradeoff with avoiding recursive inlining)
@@ -49,7 +57,7 @@ private object Gens:
     genTuple.map(p.fromProduct(_))
 
   inline def sumInstance[T](s: Mirror.SumOf[T]): SumGens[T] =
-    type Summoner[E] = SumInstanceSummoner[T, E, Gens]
+    type Summoner[E] = GensSumInstanceSummoner[T, E]
     val elems = summonAll[Tuple.Map[s.MirroredElemTypes, Summoner]].toList
       .asInstanceOf[List[Summoner[T]]]
       .map(_.deriveOrSummonSumInstance)

@@ -1,37 +1,35 @@
 package io.github.martinhh.derived
 
+import io.github.martinhh.deriving.*
 import org.scalacheck.Shrink
 
 import scala.annotation.tailrec
 import scala.compiletime.constValue
-import scala.compiletime.erasedValue
+import scala.compiletime.summonAll
 import scala.compiletime.summonInline
 import scala.compiletime.summonFrom
 import scala.deriving.*
 
+private trait ShrinkSumInstanceSummoner[T, Elem] extends SumInstanceSummoner[T, Elem, Shrink]
+
+private object ShrinkSumInstanceSummoner
+  extends SumInstanceSummonerCompanion[Shrink, ShrinkSumInstanceSummoner]:
+  protected def apply[T, Elem](makeShrink: => Shrink[Elem]): ShrinkSumInstanceSummoner[T, Elem] =
+    new ShrinkSumInstanceSummoner[T, Elem]:
+      def deriveOrSummonSumInstance: Shrink[Elem] = makeShrink
+
+  override protected inline def derive[Elem]: Shrink[Elem] =
+    shrink.deriveShrink[Elem](using summonInline[Mirror.Of[Elem]])
+
 @annotation.nowarn("msg=Stream .* is deprecated")
 private trait ShrinkDeriving:
 
-  private inline def summonSumInstances[T, Elems <: Tuple]: List[Shrink[T]] =
-    inline erasedValue[Elems] match
-      case _: (elem *: elems) =>
-        deriveOrSummonSumInstance[T, elem].asInstanceOf[Shrink[T]] :: summonSumInstances[T, elems]
-      case _: EmptyTuple =>
-        Nil
-
-  private inline def deriveOrSummonSumInstance[T, Elem]: Shrink[Elem] =
-    inline erasedValue[Elem] match
-      case _: T =>
-        inline erasedValue[T] match
-          case _: Elem =>
-            endlessRecursionError
-          case _ =>
-            deriveShrink[Elem](using summonInline[Mirror.Of[Elem]])
-      case _ =>
-        summonInline[Shrink[Elem]]
-
   private inline def shrinkSum[T](s: Mirror.SumOf[T]): Shrink[T] =
-    lazy val vec = summonSumInstances[T, s.MirroredElemTypes].toVector
+    type Summoner[E] = ShrinkSumInstanceSummoner[T, E]
+    def elems = summonAll[Tuple.Map[s.MirroredElemTypes, Summoner]].toList
+      .asInstanceOf[List[Summoner[T]]]
+      .map(_.deriveOrSummonSumInstance)
+    lazy val vec = elems.toVector
     Shrink { t =>
       val i = s.ordinal(t)
       vec(i).asInstanceOf[Shrink[t.type]].shrink(t)

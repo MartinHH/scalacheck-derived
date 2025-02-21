@@ -65,3 +65,10 @@ class LargeElemTypesSuite extends test.ArbitrarySuite with test.CogenSuite with 
   ) {
     equalArbitraryValues(summon[Arbitrary[BigEnum]].arbitrary)
   }
+
+  test(
+    "(with scala 3.4.0 or higher) supports derivation of Shrink instances for enum with more" +
+      " than 32 members (while -Xmax-inlines=32)"
+  ) {
+    equalShrinkValues(summon[Shrink[BigEnum]])
+  }

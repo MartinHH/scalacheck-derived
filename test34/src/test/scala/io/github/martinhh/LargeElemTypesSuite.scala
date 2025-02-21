@@ -7,6 +7,12 @@ import org.scalacheck.Arbitrary
 import org.scalacheck.Cogen
 import org.scalacheck.Shrink
 
+enum BigEnum:
+  case A1, B1, C1, D1, E1, F1, G1, H1, I1, J1, K1, L1, M1, N1, O1, P1, Q1, R1, S1, T1, U1, V1,
+    W1, X1, Y1, Z1,
+    A2, B2, C2, D2, E2, F2, G2, H2, I2, J2, K2, L2, M2, N2, O2, P2, Q2, R2, S2, T2, U2, V2,
+    W2, X2, Y2, Z2
+
 // format: off
 case class BigCaseClass(
   a1: Int, b1: Int, c1: Int, d1: Int, e1: Int, f1: Int, g1: Int, h1: Int, i1: Int, j1: Int,
@@ -34,21 +40,42 @@ class LargeElemTypesSuite extends test.ArbitrarySuite with test.CogenSuite with 
 
   test(
     "(with scala 3.4.0 or higher) supports derivation of Arbitrary instances for case classes with more" +
-      " than 32 fields (if -Xmax-inlines=32)"
+      " than 32 fields (while -Xmax-inlines=32)"
   ) {
     equalArbitraryValues(summon[Arbitrary[BigCaseClass]].arbitrary)
   }
 
   test(
     "(with scala 3.4.0 or higher) supports derivation of Cogen instances for case classes with more" +
-      " than 32 fields (if -Xmax-inlines=32)"
+      " than 32 fields (while -Xmax-inlines=32)"
   ) {
     equalCogenValues(summon[Cogen[BigCaseClass]])
   }
 
   test(
     "(with scala 3.4.0 or higher) supports derivation of Shrink instances for case classes with more" +
-      " than 32 fields (if -Xmax-inlines=32)"
+      " than 32 fields (while -Xmax-inlines=32)"
   ) {
     equalShrinkValues(summon[Shrink[BigCaseClass]])
+  }
+
+  test(
+    "(with scala 3.4.0 or higher) supports derivation of Arbitrary instances for enum with more" +
+      " than 32 members (while -Xmax-inlines=32)"
+  ) {
+    equalArbitraryValues(summon[Arbitrary[BigEnum]].arbitrary)
+  }
+
+  test(
+    "(with scala 3.4.0 or higher) supports derivation of Cogen instances for enum with more" +
+      " than 32 members (while -Xmax-inlines=32)"
+  ) {
+    equalCogenValues(summon[Cogen[BigEnum]])
+  }
+
+  test(
+    "(with scala 3.4.0 or higher) supports derivation of Shrink instances for enum with more" +
+      " than 32 members (while -Xmax-inlines=32)"
+  ) {
+    equalShrinkValues(summon[Shrink[BigEnum]])
   }

@@ -67,6 +67,13 @@ class LargeElemTypesSuite extends test.ArbitrarySuite with test.CogenSuite with 
   }
 
   test(
+    "(with scala 3.4.0 or higher) supports derivation of Cogen instances for enum with more" +
+      " than 32 members (while -Xmax-inlines=32)"
+  ) {
+    equalCogenValues(summon[Cogen[BigEnum]])
+  }
+
+  test(
     "(with scala 3.4.0 or higher) supports derivation of Shrink instances for enum with more" +
       " than 32 members (while -Xmax-inlines=32)"
   ) {

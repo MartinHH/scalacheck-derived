@@ -1,9 +1,9 @@
 package io.github.martinhh.derived
 
+import io.github.martinhh.deriving.*
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 
-import scala.compiletime.erasedValue
 import scala.compiletime.summonAll
 import scala.compiletime.summonFrom
 import scala.compiletime.summonInline
@@ -20,31 +20,8 @@ private object Gens:
 
   type TypeId = String
 
-  // helper typeclass that allows us to use summonAll in derivation for sum-types
-  trait SumInstanceSummoner[T, Elem]:
-    def deriveOrSummonSumInstance: Gens[Elem]
-
-  object SumInstanceSummoner:
-    // factory to avoid "New anonymous class definition will be duplicated at each inline site"
-    def apply[T, Elem](makeGens: => Gens[Elem]): SumInstanceSummoner[T, Elem] =
-      new SumInstanceSummoner[T, Elem]:
-        def deriveOrSummonSumInstance: Gens[Elem] = makeGens
-
-    inline def makeInstance[T, Elem](inline derive: => Gens[Elem]): SumInstanceSummoner[T, Elem] =
-      SumInstanceSummoner {
-        inline erasedValue[Elem] match
-          case _: T =>
-            inline erasedValue[T] match
-              case _: Elem =>
-                endlessRecursionError
-              case _ =>
-                derive
-          case _ =>
-            summonInline[Gens[Elem]]
-      }
-
-    inline given instance[T, Elem]: SumInstanceSummoner[T, Elem] =
-      makeInstance(Gens.derive[Elem](summonInline[Mirror.Of[Elem]]))
+  inline given sumInstanceSummoner[T, Elem]: SumInstanceSummoner[T, Elem, Gens] =
+    SumInstanceSummoner.makeInstance(Gens.derive[Elem](summonInline[Mirror.Of[Elem]]))
 
   // helper for productInstance (runtime-recursion over list with ugly combination of ? and asInstanceOf
   // is a tradeoff with avoiding recursive inlining)
@@ -72,8 +49,7 @@ private object Gens:
     genTuple.map(p.fromProduct(_))
 
   inline def sumInstance[T](s: Mirror.SumOf[T]): SumGens[T] =
-    // must be lazy for support of recursive structures
-    type Summoner[E] = SumInstanceSummoner[T, E]
+    type Summoner[E] = SumInstanceSummoner[T, E, Gens]
     val elems = summonAll[Tuple.Map[s.MirroredElemTypes, Summoner]].toList
       .asInstanceOf[List[Summoner[T]]]
       .map(_.deriveOrSummonSumInstance)

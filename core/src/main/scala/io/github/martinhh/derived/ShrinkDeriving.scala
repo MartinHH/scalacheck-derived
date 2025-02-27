@@ -21,7 +21,6 @@ private object ShrinkSumInstanceSummoner
   override protected inline def derive[Elem]: Shrink[Elem] =
     shrink.deriveShrink[Elem](using summonInline[Mirror.Of[Elem]])
 
-@annotation.nowarn("msg=Stream .* is deprecated")
 private trait ShrinkDeriving:
 
   private inline def shrinkSum[T](s: Mirror.SumOf[T]): Shrink[T] =
@@ -41,6 +40,7 @@ private trait ShrinkDeriving:
   // helper for shrinkProduct (runtime-recursion over list with ugly combination of Any and asInstanceOf
   // is a tradeoff with avoiding recursive inlining)
   @tailrec
+  @annotation.nowarn("cat=deprecation")
   private def shrinkTuple[T <: Tuple](
     i: Int,
     size: Int,
@@ -62,6 +62,7 @@ private trait ShrinkDeriving:
       shrinkTuple(i + 1, size, t, newAcc, shrinks.tail)
     }
 
+  @annotation.nowarn("cat=deprecation")
   private inline def shrinkProduct[T](p: Mirror.ProductOf[T]): Shrink[T] =
     val size: Tuple.Size[p.MirroredElemTypes] = constValue
     val shrinks = scala.compiletime.summonAll[Tuple.Map[p.MirroredElemTypes, Shrink]]

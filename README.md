@@ -92,10 +92,10 @@ In that case, compilation will fail with a message like this one:
 
 #### Workarounds
 
-Since version 0.6.0, the derivation mechanism was optimized to leverage certain changes that came to effect
-with Scala 3.4.0 which will drastically reduce the number of recursive inlining for "product types" (i.e. case classes),
+Since version 0.7.0, the derivation mechanism was optimized to leverage certain changes that came to effect
+with Scala 3.4.0 which will drastically reduce the number of recursive inlining,
 e.g. allowing derivation for case classes with more than 32 members without raising `-Xmax-inlines`.
-You will benefit from these changes if you depend on version 0.6.0 or higher and use Scala 3.4.0 or higher.
+You will benefit from these changes if you depend on version 0.7.0 or higher and use Scala 3.4.0 or higher.
 
 If that does not help (or if you are not able to use those versions), there are two ways to handle this:
 
@@ -110,6 +110,7 @@ used for each release:
 
 | scalacheck-derived | scalacheck | scala | scala-js | scala-native | 
 |--------------------|------------|-------|----------|--------------|
+| 0.7.0              | 1.18.1     | 3.3.5 | 1.18.2   | 0.5.6        |
 | 0.6.0              | 1.18.1     | 3.3.5 | 1.18.2   | 0.5.6        |
 | 0.5.0              | 1.18.0     | 3.3.1 | 1.16.0   | 0.5.1        |
 | 0.4.2              | 1.17.0     | 3.3.1 | 1.13.2   | 0.4.15       |

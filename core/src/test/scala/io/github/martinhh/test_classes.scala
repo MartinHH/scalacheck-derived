@@ -40,7 +40,7 @@ object SimpleADT:
           )
     }
 
-  @annotation.nowarn("msg=Stream .* is deprecated")
+  @annotation.nowarn("cat=deprecation")
   val expectedShrink: Shrink[SimpleADT] =
     Shrink {
       case SimpleCaseObject =>
@@ -136,7 +136,7 @@ object ABC:
       perturb(perturb(seed, ()), ordinal)
     }
 
-  @annotation.nowarn("msg=Stream .* is deprecated")
+  @annotation.nowarn("cat=deprecation")
   val expectedShrink: Shrink[ABC] =
     Shrink(_ => Stream.empty)
 
@@ -235,7 +235,7 @@ object HasGivenInstances:
   given specialHasGivenInstancesCogen: Cogen[HasGivenInstances] =
     Cogen(_.x + 1)
 
-  @annotation.nowarn("msg=Stream .* is deprecated")
+  @annotation.nowarn("cat=deprecation")
   given specialHasGivenInstancesShrink: Shrink[HasGivenInstances] = Shrink { hgi =>
     (1 to 3).map(i => HasGivenInstances(hgi.x + i)).toStream
   }
@@ -330,7 +330,7 @@ object RecursiveList:
           perturbSingletonInSum(1, seed, Nl)
     }
 
-  @annotation.nowarn("msg=Stream .* is deprecated")
+  @annotation.nowarn("cat=deprecation")
   def expectedShrink[T](using shrinkT: Shrink[T]): Shrink[RecursiveList[T]] =
     Shrink {
       case c: Cns[T] =>
@@ -390,7 +390,7 @@ object NestedSumsRecursiveList:
           perturbSingletonInSum(1, seed, Nl)
     }
 
-  @annotation.nowarn("msg=Stream .* is deprecated")
+  @annotation.nowarn("cat=deprecation")
   def expectedShrink[T](using shrinkT: Shrink[T]): Shrink[NestedSumsRecursiveList[T]] =
     Shrink {
       case c: Cns[T] =>
@@ -438,7 +438,7 @@ object Maybe:
           perturbSingletonInSum(1, seed, Undefined)
     }
 
-  @annotation.nowarn("msg=Stream .* is deprecated")
+  @annotation.nowarn("cat=deprecation")
   def expectedShrink[T](shrinkT: => Shrink[T]): Shrink[Maybe[T]] =
     Shrink {
       case d: Defined[T] =>
@@ -487,7 +487,7 @@ object MaybeMaybe:
           perturbSingletonInSum(1, seed, IsNotMaybe)
     }
 
-  @annotation.nowarn("msg=Stream .* is deprecated")
+  @annotation.nowarn("cat=deprecation")
   def expectedShrink[T](shrinkT: => Shrink[T]): Shrink[MaybeMaybe[T]] =
     Shrink {
       case d: IsMaybe[T] =>
@@ -561,7 +561,7 @@ object DirectRecursion:
           perturbSingletonInSum(1, seed, Stop)
     }
 
-  @annotation.nowarn("msg=Stream .* is deprecated")
+  @annotation.nowarn("cat=deprecation")
   def expectedShrink: Shrink[DirectRecursion] =
     Shrink {
       case c: Continue =>
@@ -585,7 +585,7 @@ object SealedDiamond:
   def expectedGen: Gen[SealedDiamond] =
     Gen.oneOf(Gen.const(Bar), Gen.const(Foo))
 
-  @annotation.nowarn("msg=Stream .* is deprecated")
+  @annotation.nowarn("cat=deprecation")
   val expectedShrink: Shrink[SealedDiamond] =
     Shrink { _ =>
       Stream.empty[SealedDiamond]

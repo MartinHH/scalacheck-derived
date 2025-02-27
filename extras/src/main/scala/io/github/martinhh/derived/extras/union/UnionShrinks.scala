@@ -8,9 +8,9 @@ private type TypedShrink[A] = TypedTypeClass[Shrink, A]
 
 private type UnionTypedShrinks[A] = UnionTypeClasses[TypedShrink, A]
 
-@annotation.nowarn("msg=Stream .* is deprecated")
 private trait UnionShrinks:
 
+  @annotation.nowarn("cat=deprecation")
   private def toShrink[A](uts: UnionTypedShrinks[A]): Shrink[A] =
     Shrink { (a: A) =>
       object TheUnapply:

@@ -5,6 +5,7 @@ import org.scalacheck.Prop
 import org.scalacheck.Shrink
 
 trait ShrinkSuite extends munit.ScalaCheckSuite:
+  @annotation.nowarn("cat=deprecation")
   protected def equalShrinkValues[T](
     expectedShrink: Shrink[T],
     take: Int = 100

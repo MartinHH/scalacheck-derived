@@ -17,12 +17,12 @@ inThisBuild(
   )
 )
 
-val productionOnlyOptions = Set("-Xfatal-warnings", "-Wunused:all")
+val productionOnlyOptions = Set("-Wunused:all")
 
 def sharedSettings(scalaV: String = "3.3.5") = Seq(
   scalaVersion := scalaV,
   testFrameworks += new TestFramework("munit.Framework"),
-  scalacOptions ++= productionOnlyOptions.toSeq,
+  scalacOptions ++= productionOnlyOptions.toSeq :+ "-Xfatal-warnings",
   Test / scalacOptions ~= { options =>
     options.filterNot(productionOnlyOptions) :+ "-Wunused:imports"
   },

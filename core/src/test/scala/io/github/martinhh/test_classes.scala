@@ -210,6 +210,7 @@ object ComplexADTWithNestedMembers:
       AbstractSubClass.SubclassC.expectedGen
     )
 
+  @annotation.nowarn("cat=deprecation")
   val expectedShrink: Shrink[ComplexADTWithNestedMembers] =
     Shrink {
       case AnotherCaseObject =>

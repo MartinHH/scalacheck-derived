@@ -23,6 +23,12 @@ private object ShrinkSumInstanceSummoner
 
 private trait ShrinkDeriving:
 
+  @annotation.nowarn("cat=deprecation")
+  private def mkShrink[T](f: T => LazyList[T]): Shrink[T] =
+    Shrink { t =>
+      f(t).toStream
+    }
+
   private inline def shrinkSum[T](s: Mirror.SumOf[T]): Shrink[T] =
     type Summoner[E] = ShrinkSumInstanceSummoner[T, E]
     def elems = summonAll[Tuple.Map[s.MirroredElemTypes, Summoner]].toList
@@ -40,14 +46,13 @@ private trait ShrinkDeriving:
   // helper for shrinkProduct (runtime-recursion over list with ugly combination of Any and asInstanceOf
   // is a tradeoff with avoiding recursive inlining)
   @tailrec
-  @annotation.nowarn("cat=deprecation")
   private def shrinkTuple[T <: Tuple](
     i: Int,
     size: Int,
     t: T,
-    acc: Stream[T],
+    acc: LazyList[T],
     shrinks: List[Shrink[Any]]
-  ): Stream[T] =
+  ): LazyList[T] =
     if (i >= size || shrinks.isEmpty) {
       acc
     } else {
@@ -62,13 +67,12 @@ private trait ShrinkDeriving:
       shrinkTuple(i + 1, size, t, newAcc, shrinks.tail)
     }
 
-  @annotation.nowarn("cat=deprecation")
   private inline def shrinkProduct[T](p: Mirror.ProductOf[T]): Shrink[T] =
     val size: Tuple.Size[p.MirroredElemTypes] = constValue
     val shrinks = scala.compiletime.summonAll[Tuple.Map[p.MirroredElemTypes, Shrink]]
     given Shrink[p.MirroredElemTypes] =
-      Shrink { t =>
-        shrinkTuple(0, size, t, Stream.empty, shrinks.toList.asInstanceOf[List[Shrink[Any]]])
+      mkShrink { t =>
+        shrinkTuple(0, size, t, LazyList.empty, shrinks.toList.asInstanceOf[List[Shrink[Any]]])
       }
     Shrink.xmap[p.MirroredElemTypes, T](p.fromTuple(_), productToMirroredElemTypes(p)(_))
 

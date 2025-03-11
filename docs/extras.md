@@ -6,7 +6,7 @@ You can add it to your sbt project (as test-dependency) as follows:
 
 ```
 libraryDependencies ++= Seq(
-  "io.github.martinhh" %% "scalacheck-derived" % "<version>" % "test"
+  "io.github.martinhh" %% "scalacheck-derived-extras" % "<version>" % "test"
 )
 ```
 

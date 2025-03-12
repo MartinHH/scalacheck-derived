@@ -23,12 +23,6 @@ private object ShrinkSumInstanceSummoner
 
 private trait ShrinkDeriving:
 
-  @annotation.nowarn("cat=deprecation")
-  private def mkShrink[T](f: T => LazyList[T]): Shrink[T] =
-    Shrink { t =>
-      f(t).toStream
-    }
-
   private inline def shrinkSum[T](s: Mirror.SumOf[T]): Shrink[T] =
     type Summoner[E] = ShrinkSumInstanceSummoner[T, E]
     def elems = summonAll[Tuple.Map[s.MirroredElemTypes, Summoner]].toList
@@ -71,7 +65,7 @@ private trait ShrinkDeriving:
     val size: Tuple.Size[p.MirroredElemTypes] = constValue
     val shrinks = scala.compiletime.summonAll[Tuple.Map[p.MirroredElemTypes, Shrink]]
     given Shrink[p.MirroredElemTypes] =
-      mkShrink { t =>
+      Shrink.withLazyList { t =>
         shrinkTuple(0, size, t, LazyList.empty, shrinks.toList.asInstanceOf[List[Shrink[Any]]])
       }
     Shrink.xmap[p.MirroredElemTypes, T](p.fromTuple(_), productToMirroredElemTypes(p)(_))

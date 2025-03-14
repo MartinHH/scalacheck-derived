@@ -21,24 +21,6 @@ object CogenSumInstanceSummoner
 
 trait CogenDeriving:
 
-//private inline def summonSumInstances[T, Elems <: Tuple]: List[Cogen[T]] =
-//  inline erasedValue[Elems] match
-//    case _: (elem *: elems) =>
-//      deriveOrSummonSumInstance[T, elem].asInstanceOf[Cogen[T]] :: summonSumInstances[T, elems]
-//    case _: EmptyTuple =>
-//      Nil
-
-//  private inline def deriveOrSummonSumInstance[T, Elem]: Cogen[Elem] =
-//    inline erasedValue[Elem] match
-//      case _: T =>
-//        inline erasedValue[T] match
-//          case _: Elem =>
-//            endlessRecursionError
-//          case _ =>
-//            deriveCogen[Elem](using summonInline[Mirror.Of[Elem]])
-//      case _ =>
-//        summonInline[Cogen[Elem]]
-
   private inline def cogenSum[T](s: Mirror.SumOf[T]): Cogen[T] =
     type Summoner[E] = CogenSumInstanceSummoner[T, E]
     def elems = summonAll[Tuple.Map[s.MirroredElemTypes, Summoner]].toList

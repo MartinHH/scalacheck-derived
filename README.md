@@ -76,6 +76,11 @@ If you feel the need to derive `Shrink` instances, you can do so by either impor
 
 There are limitations to the provided mechanism:
 
+### Recursive data structures
+
+While derivation for recursive structures is supported, the runtime-behavior of the derived generators
+may be less than ideal. See [./docs/recursive.md](./docs/recursive.md) for details.
+
 ### Maximal number of successive inlines
 
 The derivation mechanism uses inlining. Depending on the size of the data structure for which one

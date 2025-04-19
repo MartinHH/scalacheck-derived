@@ -12,7 +12,14 @@ import scala.deriving.*
 private sealed trait Gens[T]
 
 private case class SumGens[T](gens: List[SingleGen[T]]) extends Gens[T]:
-  def gen: Gen[T] = genOneOf(gens.map(_.gen))
+  def gen: Gen[T] =
+    Gen.sized { size =>
+      if (size <= 0) {
+        Gen.fail
+      } else {
+        Gen.resize(size - 1, genOneOf(gens.map(_.gen)))
+      }
+    }
 
 private case class SingleGen[T](tag: Gens.TypeId, gen: Gen[T]) extends Gens[T]
 

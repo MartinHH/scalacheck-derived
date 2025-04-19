@@ -607,41 +607,15 @@ sealed trait Tree
 
 object Tree:
   case class Node(one: Tree, two: Tree, three: Tree) extends Tree
-
   case class Leaf(x: Int) extends Tree
 
-  @nowarn("cat=deprecation")
   def expectedGen: Gen[Tree] =
-    org.scalacheck.io.github.martinhh.failOnStackOverflow(
-      Gen.oneOf(
-        Gen.lzy(
-          expectedGen.flatMap(l =>
-            expectedGen.flatMap(m => expectedGen.flatMap(r => Node(l, m, r)))
-          )
-        ),
-        arbitrary[Int].map(Leaf.apply)
-      )
+    expectedGenOneOf(
+      Gen.lzy(
+        expectedGen.flatMap(l => expectedGen.flatMap(m => expectedGen.flatMap(r => Node(l, m, r))))
+      ),
+      arbitrary[Int].map(Leaf.apply)
     )
-
-  def expectedGen2: Gen[Tree] =
-    Gen.sized { size =>
-      // println(s"size: $size")
-      if (size <= 0) {
-        Gen.fail
-      } else {
-        Gen.resize(
-          size - 1,
-          Gen.oneOf(
-            Gen.delay(
-              expectedGen2.flatMap(l =>
-                expectedGen2.flatMap(m => expectedGen2.flatMap(r => Node(l, m, r)))
-              )
-            ),
-            arbitrary[Int].map(Leaf.apply)
-          )
-        )
-      }
-    }
 
 
 

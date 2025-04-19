@@ -88,7 +88,7 @@ class ArbitraryDerivingSuite extends test.ArbitrarySuite:
   }
 
   test("supports tree-like data structures (without blowing the stack)") {
-    equalArbitraryValues(Tree.expectedGen2)(using Arbitrary(Tree.expectedGen2))
+    equalArbitraryValues(Tree.expectedGen)
   }
 
   test("even distribution in sealed traits with diamond inheritance") {

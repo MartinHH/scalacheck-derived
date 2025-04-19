@@ -1,3 +1,5 @@
+import xerial.sbt.Sonatype.sonatypeCentralHost
+
 inThisBuild(
   Seq(
     organization := "io.github.martinhh",
@@ -11,7 +13,7 @@ inThisBuild(
         url("https://martinhh.github.io/")
       )
     ),
-    sonatypeCredentialHost := "s01.oss.sonatype.org",
+    sonatypeCredentialHost := sonatypeCentralHost,
     sonatypeRepository := "https://s01.oss.sonatype.org/service/local",
     versionScheme := Some("semver-spec")
   )

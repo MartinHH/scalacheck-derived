@@ -9,8 +9,6 @@ import org.scalacheck.Gen
 import org.scalacheck.Shrink
 import org.scalacheck.rng.Seed
 
-import scala.annotation.nowarn
-
 // helper for defining expected Cogens
 private def perturbSingletonInSum[T](ordinal: Int, seed: Seed, value: T) =
   perturb(

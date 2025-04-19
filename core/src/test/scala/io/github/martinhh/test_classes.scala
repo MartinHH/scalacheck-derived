@@ -9,6 +9,8 @@ import org.scalacheck.Gen
 import org.scalacheck.Shrink
 import org.scalacheck.rng.Seed
 
+import scala.annotation.nowarn
+
 // helper for defining expected Cogens
 private def perturbSingletonInSum[T](ordinal: Int, seed: Seed, value: T) =
   perturb(
@@ -591,6 +593,28 @@ object SealedDiamond:
     Shrink { _ =>
       Stream.empty[SealedDiamond]
     }
+
+sealed trait Tree
+
+object Tree:
+  case class Node(one: Tree, two: Tree, three: Tree) extends Tree
+
+  case class Leaf(x: Int) extends Tree
+
+  @nowarn("cat=deprecation")
+  def expectedGen: Gen[Tree] =
+    org.scalacheck.io.github.martinhh.failOnStackOverflow(
+      Gen.oneOf(
+        Gen.lzy(
+          expectedGen.flatMap(l =>
+            expectedGen.flatMap(m => expectedGen.flatMap(r => Node(l, m, r)))
+          )
+        ),
+        arbitrary[Int].map(Leaf.apply)
+      )
+    )
+  
+
 
 // format: off
 case class MaxCaseClass(

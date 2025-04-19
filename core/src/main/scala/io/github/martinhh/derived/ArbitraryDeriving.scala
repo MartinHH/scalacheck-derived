@@ -13,10 +13,14 @@ import scala.deriving.*
 private sealed trait Gens[T]
 
 private case class SumGens[T](gens: List[SingleGen[T]]) extends Gens[T]:
-  @nowarn("cat=deprecation")
-  def gen(retryOnStackOverflow: Boolean): Gen[T] =
-    val gen = genOneOf(gens.map(_.gen))
-    if (retryOnStackOverflow) org.scalacheck.io.github.martinhh.failOnStackOverflow(gen) else gen
+  def gen: Gen[T] =
+    Gen.sized { size =>
+      if (size <= 0) {
+        Gen.fail
+      } else {
+        Gen.resize(size - 1, genOneOf(gens.map(_.gen)))
+      }
+    }
 
 private case class SingleGen[T](tag: Gens.TypeId, gen: Gen[T]) extends Gens[T]
 
@@ -95,8 +99,6 @@ private object Gens:
  */
 private trait ArbitraryDeriving:
 
-  protected def retryOnStackOverflow: Boolean = false
-
   /**
    * Derives an `Arbitrary[T]`, ignoring any `given Arbitrary[T]` that is already in scope.
    *
@@ -113,7 +115,7 @@ private trait ArbitraryDeriving:
     import scalacheck.anyGivenArbitrary
     inline m match
       case s: Mirror.SumOf[T] =>
-        Arbitrary(Gens.sumInstance(s).gen(retryOnStackOverflow))
+        Arbitrary(Gens.sumInstance(s).gen)
       case p: Mirror.ProductOf[T] =>
         Arbitrary(Gens.productGen(p))
 
@@ -137,12 +139,9 @@ private trait ArbitraryDeriving:
       case a: Arbitrary[T] =>
         a
       case s: Mirror.SumOf[T] =>
-        given arb: Arbitrary[T] = Arbitrary(Gens.sumInstance(s).gen(retryOnStackOverflow))
+        given arb: Arbitrary[T] = Arbitrary(Gens.sumInstance(s).gen)
         arb
       case p: Mirror.ProductOf[T] =>
         given arb: Arbitrary[T] = Arbitrary(Gens.productGen(p))
         arb
     }
-
-private trait StackOverflowCatchingArbitraryDeriving extends ArbitraryDeriving:
-  override protected def retryOnStackOverflow: Boolean = true

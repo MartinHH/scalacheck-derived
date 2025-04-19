@@ -21,11 +21,20 @@ private def perturbSingletonInSum[T](ordinal: Int, seed: Seed, value: T) =
     ordinal
   )
 
+private def expectedGenOneOf[A](g0: Gen[A], g1: Gen[A], gn: Gen[A]*): Gen[A] =
+  Gen.sized { size =>
+    if (size <= 0) {
+      Gen.fail
+    } else {
+      Gen.resize(size - 1, Gen.oneOf(g0, g1, gn*))
+    }
+  }
+
 sealed trait SimpleADT
 
 object SimpleADT:
   val expectedGen: Gen[SimpleADT] =
-    Gen.oneOf(Gen.const(SimpleCaseObject), SimpleCaseClass.expectedGen)
+    expectedGenOneOf(Gen.const(SimpleCaseObject), SimpleCaseClass.expectedGen)
 
   val expectedCogen: Cogen[SimpleADT] =
     Cogen { (seed, value) =>
@@ -130,7 +139,7 @@ enum ABC(val asChar: Char):
 
 object ABC:
   val expectedGen: Gen[ABC] =
-    Gen.oneOf(ABC.A, ABC.B, ABC.C)
+    expectedGenOneOf(ABC.A, ABC.B, ABC.C)
 
   val expectedCogen: Cogen[ABC] =
     Cogen { (seed, value) =>
@@ -205,7 +214,7 @@ object AbstractSubClass:
 
 object ComplexADTWithNestedMembers:
   val expectedGen: Gen[ComplexADTWithNestedMembers] =
-    Gen.oneOf(
+    expectedGenOneOf(
       Gen.const(AnotherCaseObject),
       AbstractSubClass.SubclassA.expectedGen,
       AbstractSubClass.SubclassB.expectedGen,
@@ -300,7 +309,7 @@ enum RecursiveList[+T]:
 
 object RecursiveList:
   def expectedGen[T](using arbT: Arbitrary[T]): Gen[RecursiveList[T]] =
-    Gen.oneOf(
+    expectedGenOneOf(
       for {
         t <- arbT.arbitrary
         ts <- expectedGen[T]
@@ -356,7 +365,7 @@ object NestedSumsRecursiveList:
   case object Nl extends NestedSumsRecursiveList[Nothing]
 
   def expectedGen[T](using arbT: Arbitrary[T]): Gen[NestedSumsRecursiveList[T]] =
-    Gen.oneOf(
+    expectedGenOneOf(
       for {
         t <- arbT.arbitrary
         ts <- expectedGen[T]
@@ -413,7 +422,7 @@ enum Maybe[+T]:
 
 object Maybe:
   def expectedGen[T](using arbT: Arbitrary[T]): Gen[Maybe[T]] =
-    Gen.oneOf(
+    expectedGenOneOf(
       arbT.arbitrary.map(Defined.apply),
       Gen.const(Undefined)
     )
@@ -462,7 +471,7 @@ object MaybeMaybe:
   case object IsNotMaybe extends MaybeMaybe[Nothing]
 
   def expectedGen[T](using arbT: Arbitrary[T]): Gen[MaybeMaybe[T]] =
-    Gen.oneOf(
+    expectedGenOneOf(
       Maybe.expectedGen[T].map(IsMaybe.apply),
       Gen.const(IsNotMaybe)
     )
@@ -544,7 +553,7 @@ enum DirectRecursion:
 object DirectRecursion:
 
   def expectedGen: Gen[DirectRecursion] =
-    Gen.oneOf(Gen.lzy(expectedGen.map(Continue(_))), Gen.const(Stop))
+    expectedGenOneOf(Gen.lzy(expectedGen.map(Continue(_))), Gen.const(Stop))
 
   def expectedCogen: Cogen[DirectRecursion] =
     Cogen { (seed, value) =>
@@ -586,7 +595,7 @@ object SealedDiamond:
   case object Bar extends SubtraitA with SubtraitB
 
   def expectedGen: Gen[SealedDiamond] =
-    Gen.oneOf(Gen.const(Bar), Gen.const(Foo))
+    expectedGenOneOf(Gen.const(Bar), Gen.const(Foo))
 
   @annotation.nowarn("cat=deprecation")
   val expectedShrink: Shrink[SealedDiamond] =
@@ -613,7 +622,28 @@ object Tree:
         arbitrary[Int].map(Leaf.apply)
       )
     )
-  
+
+  def expectedGen2: Gen[Tree] =
+    Gen.sized { size =>
+      // println(s"size: $size")
+      if (size <= 0) {
+        Gen.fail
+      } else {
+        Gen.resize(
+          size - 1,
+          Gen.oneOf(
+            Gen.delay(
+              expectedGen2.flatMap(l =>
+                expectedGen2.flatMap(m => expectedGen2.flatMap(r => Node(l, m, r)))
+              )
+            ),
+            arbitrary[Int].map(Leaf.apply)
+          )
+        )
+      }
+    }
+
+
 
 
 // format: off

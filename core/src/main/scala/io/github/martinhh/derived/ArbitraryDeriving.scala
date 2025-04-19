@@ -4,7 +4,6 @@ import io.github.martinhh.deriving.*
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 
-import scala.annotation.nowarn
 import scala.compiletime.summonAll
 import scala.compiletime.summonFrom
 import scala.compiletime.summonInline

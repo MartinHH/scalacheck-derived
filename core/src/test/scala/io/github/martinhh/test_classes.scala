@@ -19,14 +19,19 @@ private def perturbSingletonInSum[T](ordinal: Int, seed: Seed, value: T) =
     ordinal
   )
 
-private def expectedGenOneOf[A](g0: Gen[A], g1: Gen[A], gn: Gen[A]*): Gen[A] =
+private def expectedGenOneOfWithFallback[A](
+  fallback: Gen[A]
+)(g0: Gen[A], g1: Gen[A], gn: Gen[A]*): Gen[A] =
   Gen.sized { size =>
     if (size <= 0) {
-      Gen.fail
+      fallback
     } else {
       Gen.resize(size - 1, Gen.oneOf(g0, g1, gn*))
     }
   }
+
+private def expectedGenOneOf[A](g0: Gen[A], g1: Gen[A], gn: Gen[A]*): Gen[A] =
+  expectedGenOneOfWithFallback(Gen.fail)(g0, g1, gn*)
 
 sealed trait SimpleADT
 
@@ -607,15 +612,15 @@ object Tree:
   case class Node(one: Tree, two: Tree, three: Tree) extends Tree
   case class Leaf(x: Int) extends Tree
 
-  def expectedGen: Gen[Tree] =
-    expectedGenOneOf(
+  def expectedGenWithFallback(fallback: Gen[Tree]): Gen[Tree] =
+    expectedGenOneOfWithFallback(fallback)(
       Gen.lzy(
         expectedGen.flatMap(l => expectedGen.flatMap(m => expectedGen.flatMap(r => Node(l, m, r))))
       ),
       arbitrary[Int].map(Leaf.apply)
     )
 
-
+  def expectedGen: Gen[Tree] = expectedGenWithFallback(Gen.fail)
 
 
 // format: off

@@ -1,8 +1,10 @@
 package io.github.martinhh
 
+import io.github.martinhh.derived.RecursionFallback
 import org.scalacheck
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
+import org.scalacheck.Gen.Parameters
 
 class ArbitraryDerivingSuite extends test.ArbitrarySuite:
 
@@ -89,6 +91,29 @@ class ArbitraryDerivingSuite extends test.ArbitrarySuite:
 
   test("supports tree-like data structures (without blowing the stack)") {
     equalArbitraryValues(Tree.expectedGen)
+  }
+
+  test("supports RecursionFallback.apply(constValue)") {
+    val fallback = Tree.Leaf(42)
+    given RecursionFallback[Tree] = RecursionFallback(fallback)
+    equalArbitraryValues(
+      Tree.expectedGenWithFallback(Gen.const(fallback)),
+      Parameters.default.withSize(5)
+    )
+  }
+
+  test("supports RecursionFallback.apply(gen)") {
+    val fallback = Gen.choose(13, 16).map(Tree.Leaf.apply)
+    given RecursionFallback[Tree] = RecursionFallback(fallback)
+    equalArbitraryValues(Tree.expectedGenWithFallback(fallback), Parameters.default.withSize(5))
+  }
+
+  test("supports RecursionFallback.apply[Tree, Leaf]") {
+    given RecursionFallback[Tree] = RecursionFallback[Tree, Tree.Leaf]
+    equalArbitraryValues(
+      Tree.expectedGenWithFallback(summon[Arbitrary[Tree.Leaf]].arbitrary),
+      Parameters.default.withSize(5)
+    )
   }
 
   test("even distribution in sealed traits with diamond inheritance") {

@@ -15,10 +15,17 @@ private case class SumGens[T](gens: List[SingleGen[T]]) extends Gens[T]:
   def gen: Gen[T] =
     Gen.sized { size =>
       if (size <= 0) {
-        Gen.fail
+        SumGens.fallBackGen
       } else {
         Gen.resize(size - 1, genOneOf(gens.map(_.gen)))
       }
+    }
+
+private object SumGens:
+  inline def fallBackGen[A]: Gen[A] =
+    summonFrom {
+      case rf: RecursionFallback[A] => rf.gen
+      case _                        => Gen.fail
     }
 
 private case class SingleGen[T](tag: Gens.TypeId, gen: Gen[T]) extends Gens[T]

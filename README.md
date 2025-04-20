@@ -79,7 +79,8 @@ There are limitations to the provided mechanism:
 ### Recursive data structures
 
 While derivation for recursive structures is supported, the runtime-behavior of the derived generators
-may be less than ideal. See [./docs/recursive.md](./docs/recursive.md) for details.
+may be less than ideal and may need further tweaking. See [./docs/recursive.md](./docs/recursive.md) for 
+details and recommended solutions.
 
 ### Maximal number of successive inlines
 

@@ -50,6 +50,8 @@ Prop.forAll { (item: LibItem) =>
   // your test using item here...
 }
 ```
+Note that while this is convenient, this style of "ad-hoc-derivation" comes with the risk of instance being derived
+redundantly, potentially leading to overhead in compilation times that could be avoided.
 
 ### b) derive explicitly
 

@@ -2,7 +2,8 @@
 
 [![CI](https://github.com/martinhh/scalacheck-derived/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MartinHH/scalacheck-derived/actions/workflows/ci.yml?query=branch%3Amain) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.martinhh/scalacheck-derived_3/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.martinhh/scalacheck-derived_3)
 
-Automatic derivation of [scalacheck](https://github.com/typelevel/scalacheck) `Arbitrary` (and `Cogen` and `Shrink`) instances for Scala 3.
+Automatic derivation of [scalacheck](https://github.com/typelevel/scalacheck) `Arbitrary` (and `Cogen` and `Shrink`)
+instances for Scala 3.
 
 This enables automatic derivation for enums, case classes and sealed traits.
 
@@ -50,6 +51,7 @@ Prop.forAll { (item: LibItem) =>
   // your test using item here...
 }
 ```
+
 Note that while this is convenient, this style of "ad-hoc-derivation" comes with the risk of instance being derived
 redundantly, potentially leading to overhead in compilation times that could be avoided.
 
@@ -70,7 +72,7 @@ given arbLibItem: Arbitrary[LibItem] = deriveArbitrary
 Since there is a default/fallback (non-shrinking) `Shrink` instance provided by scalacheck for any type and since
 derivation may cause significant compile-time overhead, derivation of `Shrink` instances is optional.
 
-If you feel the need to derive `Shrink` instances, you can do so by either importing 
+If you feel the need to derive `Shrink` instances, you can do so by either importing
 `io.github.martinhh.derived.shrink.given` (for "fully implicit" derivation) or by using
 `io.github.martinhh.derived.shrink.deriveShrink`.
 
@@ -81,7 +83,7 @@ There are limitations to the provided mechanism:
 ### Recursive data structures
 
 While derivation for recursive structures is supported, the runtime-behavior of the derived generators
-may be less than ideal and may need further tweaking. See [./docs/recursive.md](./docs/recursive.md) for 
+may be less than ideal and may need further tweaking. See [./docs/recursive.md](./docs/recursive.md) for
 details and recommended solutions.
 
 ### Maximal number of successive inlines
@@ -116,16 +118,17 @@ If that does not help (or if you are not able to use those versions), there are 
 The following table documents which versions of scalacheck, scala, scala-js and scala-native were
 used for each release:
 
-| scalacheck-derived | scalacheck | scala | scala-js | scala-native | 
-|--------------------|------------|-------|----------|--------------|
-| 0.8.0              | 1.18.1     | 3.3.5 | 1.18.2   | 0.5.7        |
-| 0.7.1              | 1.18.1     | 3.3.5 | 1.18.2   | 0.5.6        |
-| 0.7.0              | 1.18.1     | 3.3.5 | 1.18.2   | 0.5.6        |
-| 0.6.0              | 1.18.1     | 3.3.5 | 1.18.2   | 0.5.6        |
-| 0.5.0              | 1.18.0     | 3.3.1 | 1.16.0   | 0.5.1        |
-| 0.4.2              | 1.17.0     | 3.3.1 | 1.13.2   | 0.4.15       |
-| 0.4.1              | 1.17.0     | 3.3.0 | 1.13.0   | 0.4.14       |
-| 0.4.0              | 1.17.0     | 3.3.0 | 1.13.0   | 0.4.14       |
-| 0.3.0              | 1.17.0     | 3.3.0 | 1.13.0   | 0.4.14       |
-| 0.2.0              | 1.17.0     | 3.2.2 | 1.13.0   | 0.4.12       |
-| 0.1.0              | 1.17.0     | 3.2.2 | 1.13.0   | 0.4.12       |
+| scalacheck-derived | scalacheck | scala | scala-js | scala-native | java |
+|--------------------|------------|-------|----------|--------------|------|
+| 0.8.1              | 1.18.1     | 3.3.5 | 1.18.2   | 0.5.7        | 11   |
+| 0.8.0              | 1.18.1     | 3.3.5 | 1.18.2   | 0.5.7        | 8    |
+| 0.7.1              | 1.18.1     | 3.3.5 | 1.18.2   | 0.5.6        | 8    |
+| 0.7.0              | 1.18.1     | 3.3.5 | 1.18.2   | 0.5.6        | 8    |
+| 0.6.0              | 1.18.1     | 3.3.5 | 1.18.2   | 0.5.6        | 8    |
+| 0.5.0              | 1.18.0     | 3.3.1 | 1.16.0   | 0.5.1        | 8    |
+| 0.4.2              | 1.17.0     | 3.3.1 | 1.13.2   | 0.4.15       | 8    |
+| 0.4.1              | 1.17.0     | 3.3.0 | 1.13.0   | 0.4.14       | 8    |
+| 0.4.0              | 1.17.0     | 3.3.0 | 1.13.0   | 0.4.14       | 17   |
+| 0.3.0              | 1.17.0     | 3.3.0 | 1.13.0   | 0.4.14       | 17   |
+| 0.2.0              | 1.17.0     | 3.2.2 | 1.13.0   | 0.4.12       | 17   |
+| 0.1.0              | 1.17.0     | 3.2.2 | 1.13.0   | 0.4.12       | 17   |

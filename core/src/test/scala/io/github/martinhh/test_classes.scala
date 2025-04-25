@@ -613,12 +613,14 @@ object Tree:
   case class Leaf(x: Int) extends Tree
 
   def expectedGenWithFallback(fallback: Gen[Tree]): Gen[Tree] =
-    expectedGenOneOfWithFallback(fallback)(
-      Gen.lzy(
-        expectedGen.flatMap(l => expectedGen.flatMap(m => expectedGen.flatMap(r => Node(l, m, r))))
-      ),
-      arbitrary[Int].map(Leaf.apply)
-    )
+    def gen: Gen[Tree] =
+      expectedGenOneOfWithFallback(fallback)(
+        Gen.lzy(
+          gen.flatMap(l => gen.flatMap(m => gen.flatMap(r => Node(l, m, r))))
+        ),
+        arbitrary[Int].map(Leaf.apply)
+      )
+    gen
 
   def expectedGen: Gen[Tree] = expectedGenWithFallback(Gen.fail)
 

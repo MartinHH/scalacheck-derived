@@ -93,6 +93,12 @@ class ArbitraryDerivingSuite extends test.ArbitrarySuite:
     equalArbitraryValues(Tree.expectedGen)
   }
 
+  test("with size 0 and RecursionFallback, the fallback is used always") {
+    val fallback: Gen[Tree] = Gen.const(Tree.Leaf(4242))
+    given RecursionFallback[Tree] = RecursionFallback(fallback)
+    equalArbitraryValues(fallback, Parameters.default.withSize(0))
+  }
+
   test("supports RecursionFallback.apply(constValue)") {
     val fallback = Tree.Leaf(42)
     given RecursionFallback[Tree] = RecursionFallback(fallback)

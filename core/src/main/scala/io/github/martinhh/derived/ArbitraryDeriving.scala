@@ -11,22 +11,8 @@ import scala.deriving.*
 
 private sealed trait Gens[T]
 
-private case class SumGens[T](gens: List[SingleGen[T]]) extends Gens[T]:
-  inline def gen: Gen[T] =
-    Gen.sized { size =>
-      if (size <= 0) {
-        SumGens.fallBackGen[T]
-      } else {
-        Gen.resize(size - 1, genOneOf(gens.map(_.gen)))
-      }
-    }
-
-private object SumGens:
-  inline def fallBackGen[A]: Gen[A] =
-    summonFrom {
-      case rf: RecursionFallback[A] => rf.gen
-      case _                        => Gen.fail
-    }
+private case class SumGens[T](singleGens: List[SingleGen[T]]) extends Gens[T]:
+  def gens: List[Gen[T]] = singleGens.map(_.gen)
 
 private case class SingleGen[T](tag: Gens.TypeId, gen: Gen[T]) extends Gens[T]
 
@@ -77,7 +63,7 @@ private object Gens:
       .map(_.deriveOrSummonSumInstance)
     val combined = elems.foldLeft(List.empty[SingleGen[T]]) {
       case (acc, s: SingleGen[T]) => acc :+ s
-      case (acc, s: SumGens[T])   => acc ++ s.gens
+      case (acc, s: SumGens[T])   => acc ++ s.singleGens
     }
     SumGens(combined.distinctBy(_.tag))
 
@@ -105,6 +91,18 @@ private object Gens:
  */
 private trait ArbitraryDeriving:
 
+  private inline def sumGen[A](gens: List[Gen[A]]): Gen[A] = {
+    buildSumGen(gens, fallBackGen)
+  }
+
+  protected def buildSumGen[A](gens: List[Gen[A]], fallbackGen: Option[Gen[A]]): Gen[A]
+
+  private inline def fallBackGen[A]: Option[Gen[A]] =
+    summonFrom {
+      case rf: RecursionFallback[A] => Some(rf.gen)
+      case _                        => None
+    }
+
   /**
    * Derives an `Arbitrary[T]`, ignoring any `given Arbitrary[T]` that is already in scope.
    *
@@ -121,7 +119,7 @@ private trait ArbitraryDeriving:
     import scalacheck.anyGivenArbitrary
     inline m match
       case s: Mirror.SumOf[T] =>
-        Arbitrary(Gens.sumInstance(s).gen)
+        Arbitrary(sumGen(Gens.sumInstance(s).gens))
       case p: Mirror.ProductOf[T] =>
         Arbitrary(Gens.productGen(p))
 
@@ -145,9 +143,29 @@ private trait ArbitraryDeriving:
       case a: Arbitrary[T] =>
         a
       case s: Mirror.SumOf[T] =>
-        given arb: Arbitrary[T] = Arbitrary(Gens.sumInstance(s).gen)
+        given arb: Arbitrary[T] = Arbitrary(sumGen(Gens.sumInstance(s).gens))
         arb
       case p: Mirror.ProductOf[T] =>
         given arb: Arbitrary[T] = Arbitrary(Gens.productGen(p))
         arb
+    }
+
+private object ArbitraryDeriving:
+  def apply(sumGenFactory: [a] => (List[Gen[a]], Option[Gen[a]]) => Gen[a]): ArbitraryDeriving =
+    new ArbitraryDeriving:
+      override protected def buildSumGen[A](
+        gens: List[Gen[A]],
+        fallbackGen: Option[Gen[A]]
+      ): Gen[A] =
+        sumGenFactory(gens, fallbackGen)
+
+private trait DefaultArbitraryDeriving extends ArbitraryDeriving:
+
+  override protected def buildSumGen[A](gens: List[Gen[A]], fallbackGen: Option[Gen[A]]): Gen[A] =
+    Gen.sized { size =>
+      if (size <= 0) {
+        fallbackGen.getOrElse(Gen.fail)
+      } else {
+        Gen.resize(size - 1, genOneOf(gens))
+      }
     }

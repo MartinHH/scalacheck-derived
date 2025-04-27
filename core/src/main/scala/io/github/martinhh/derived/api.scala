@@ -6,10 +6,33 @@ import org.scalacheck.Gen
  * Public "API-entry-point" for derivation of `Arbitrary`-instances.
  */
 object arbitrary extends DefaultArbitraryDeriving:
-  def withSumGenFactory(
-    sumGenFactory: [a] => (List[Gen[a]], Option[Gen[a]]) => Gen[a]
-  ): ArbitraryDeriving =
-    ArbitraryDeriving(sumGenFactory)
+
+  object configured:
+
+    private sealed trait NoConf[A]
+
+    def simple(
+      sumGenFactory: [a] => List[Gen[a]] => Gen[a]
+    ): ArbitraryDeriving[?] =
+      ArbitraryDeriving[
+        NoConf
+      ]([a] => (l: List[Gen[a]], _: Option[NoConf[a]]) => sumGenFactory[a](l))
+
+    def recursionFallback(
+      sumGenFactory: [a] => (List[Gen[a]], Option[RecursionFallback[a]]) => Gen[a]
+    ): ArbitraryDeriving[?] =
+      ArbitraryDeriving[RecursionFallback](sumGenFactory)
+
+    def customConf[SumConfig[_]](
+      sumGenFactory: [a] => (List[Gen[a]], Option[SumConfig[a]]) => Gen[a]
+    ): ArbitraryDeriving[?] =
+      ArbitraryDeriving[SumConfig](sumGenFactory)
+
+    def simpleConf[SumConfig](
+      sumGenFactory: [a] => (List[Gen[a]], Option[SumConfig]) => Gen[a]
+    ): ArbitraryDeriving[?] =
+      type C[A] = SumConfig
+      ArbitraryDeriving[C]([a] => (l: List[Gen[a]], c: Option[C[a]]) => sumGenFactory[a](l, c))
 
 /**
  * Public "API-entry-point" for derivation of scalacheck-typeclass-instances.

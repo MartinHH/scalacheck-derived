@@ -89,18 +89,17 @@ private object Gens:
 /**
  * Derivation of `Arbitrary`s.
  */
-private trait ArbitraryDeriving:
+private trait ArbitraryDeriving[SumConfig[_]]:
 
-  private inline def sumGen[A](gens: List[Gen[A]]): Gen[A] = {
-    buildSumGen(gens, fallBackGen)
-  }
+  private inline def sumGen[A](gens: List[Gen[A]]): Gen[A] =
+    buildSumGen(gens, configOpt)
 
-  protected def buildSumGen[A](gens: List[Gen[A]], fallbackGen: Option[Gen[A]]): Gen[A]
+  protected def buildSumGen[A](gens: List[Gen[A]], fallbackGen: Option[SumConfig[A]]): Gen[A]
 
-  private inline def fallBackGen[A]: Option[Gen[A]] =
+  protected inline def configOpt[A]: Option[SumConfig[A]] =
     summonFrom {
-      case rf: RecursionFallback[A] => Some(rf.gen)
-      case _                        => None
+      case rf: SumConfig[A] => Some(rf)
+      case _                => None
     }
 
   /**
@@ -151,20 +150,25 @@ private trait ArbitraryDeriving:
     }
 
 private object ArbitraryDeriving:
-  def apply(sumGenFactory: [a] => (List[Gen[a]], Option[Gen[a]]) => Gen[a]): ArbitraryDeriving =
-    new ArbitraryDeriving:
+  def apply[Conf[_]](
+    sumGenFactory: [a] => (List[Gen[a]], Option[Conf[a]]) => Gen[a]
+  ): ArbitraryDeriving[Conf] =
+    new ArbitraryDeriving[Conf]:
       override protected def buildSumGen[A](
         gens: List[Gen[A]],
-        fallbackGen: Option[Gen[A]]
+        fallbackGen: Option[Conf[A]]
       ): Gen[A] =
         sumGenFactory(gens, fallbackGen)
 
-private trait DefaultArbitraryDeriving extends ArbitraryDeriving:
+private trait DefaultArbitraryDeriving extends ArbitraryDeriving[RecursionFallback]:
 
-  override protected def buildSumGen[A](gens: List[Gen[A]], fallbackGen: Option[Gen[A]]): Gen[A] =
+  override protected def buildSumGen[A](
+    gens: List[Gen[A]],
+    fallbackGen: Option[RecursionFallback[A]]
+  ): Gen[A] =
     Gen.sized { size =>
       if (size <= 0) {
-        fallbackGen.getOrElse(Gen.fail)
+        fallbackGen.fold(Gen.fail)(_.fallbackGen)
       } else {
         Gen.resize(size - 1, genOneOf(gens))
       }

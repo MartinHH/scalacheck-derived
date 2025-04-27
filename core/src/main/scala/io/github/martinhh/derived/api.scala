@@ -20,19 +20,13 @@ object arbitrary extends DefaultArbitraryDeriving:
 
     def recursionFallback(
       sumGenFactory: [a] => (List[Gen[a]], Option[RecursionFallback[a]]) => Gen[a]
-    ): ArbitraryDeriving[?] =
+    ): ArbitraryDeriving[RecursionFallback] =
       ArbitraryDeriving[RecursionFallback](sumGenFactory)
 
     def customConf[SumConfig[_]](
       sumGenFactory: [a] => (List[Gen[a]], Option[SumConfig[a]]) => Gen[a]
-    ): ArbitraryDeriving[?] =
+    ): ArbitraryDeriving[SumConfig] =
       ArbitraryDeriving[SumConfig](sumGenFactory)
-
-    def simpleConf[SumConfig](
-      sumGenFactory: [a] => (List[Gen[a]], Option[SumConfig]) => Gen[a]
-    ): ArbitraryDeriving[?] =
-      type C[A] = SumConfig
-      ArbitraryDeriving[C]([a] => (l: List[Gen[a]], c: Option[C[a]]) => sumGenFactory[a](l, c))
 
 /**
  * Public "API-entry-point" for derivation of scalacheck-typeclass-instances.

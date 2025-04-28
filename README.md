@@ -1,6 +1,6 @@
 # scalacheck-derived
 
-[![CI](https://github.com/martinhh/scalacheck-derived/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MartinHH/scalacheck-derived/actions/workflows/ci.yml?query=branch%3Amain) [![Maven Central](https://maven-badges.sml.io/sonatype-central/io.github.martinhh/scalacheck-derived_3/badge.svg)](https://maven-badges.sml.io/sonatype-central/io.github.martinhh/scalacheck-derived_3)
+[![CI](https://github.com/martinhh/scalacheck-derived/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MartinHH/scalacheck-derived/actions/workflows/ci.yml?query=branch%3Amain) [![Maven Central](https://maven-badges.sml.io/sonatype-central/io.github.martinhh/scalacheck-derived_3/badge.svg?gav=true)](https://maven-badges.sml.io/sonatype-central/io.github.martinhh/scalacheck-derived_3?gav=true)
 
 Automatic derivation of [scalacheck](https://github.com/typelevel/scalacheck) `Arbitrary` (and `Cogen` and `Shrink`)
 instances for Scala 3.

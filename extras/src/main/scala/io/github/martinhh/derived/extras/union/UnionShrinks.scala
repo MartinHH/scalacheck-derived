@@ -8,7 +8,7 @@ private type TypedShrink[A] = TypedTypeClass[Shrink, A]
 
 private type UnionTypedShrinks[A] = UnionTypeClasses[TypedShrink, A]
 
-private trait UnionShrinks:
+trait UnionShrinks:
 
   @annotation.nowarn("cat=deprecation")
   private def toShrink[A](uts: UnionTypedShrinks[A]): Shrink[A] =
@@ -22,10 +22,10 @@ private trait UnionShrinks:
       streamOpt.get
     }
 
-  transparent inline given unionTypedShrinksMacro[X]: UnionTypedShrinks[X] =
+  transparent inline final given unionTypedShrinksMacro[X]: UnionTypedShrinks[X] =
     io.github.martinhh.derived.extras.union.unionTypedShrinksMacro
 
-  transparent inline given shrinkUnion[X](
+  transparent inline final given shrinkUnion[X](
     using @implicitNotFound(
       "Could not find a given instance for UnionTypedShrinks[${X}].\n" +
         "Reason might be that ${X} is not a union or (if ${X} is a union)\n" +

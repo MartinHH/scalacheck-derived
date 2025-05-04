@@ -4,4 +4,4 @@ import org.scalacheck.Cogen
 
 trait LiteralCogens:
 
-  given cogenLiteral[A: ValueOf]: Cogen[A] = Cogen(_ => 0L)
+  final given cogenLiteral[A: ValueOf]: Cogen[A] = Cogen(_ => 0L)

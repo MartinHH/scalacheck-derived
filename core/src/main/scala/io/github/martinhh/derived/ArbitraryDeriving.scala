@@ -163,17 +163,6 @@ trait ArbitraryDeriving[SumConfig[_]]:
         arb
     }
 
-private object ArbitraryDeriving:
-  def apply[Conf[_]](
-    sumGenFactory: [a] => (List[Gen[a]], Option[Conf[a]]) => Gen[a]
-  ): ArbitraryDeriving[Conf] =
-    new ArbitraryDeriving[Conf]:
-      override protected def buildSumGen[A](
-        gens: List[Gen[A]],
-        config: Option[Conf[A]]
-      ): Gen[A] =
-        sumGenFactory(gens, config)
-
 /**
  * Default implementation of derivation of `Arbitrary`s.
  */

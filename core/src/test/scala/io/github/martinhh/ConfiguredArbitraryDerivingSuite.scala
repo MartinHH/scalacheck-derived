@@ -17,21 +17,21 @@ class ConfiguredArbitraryDerivingSuite extends test.ArbitrarySuite:
     def buildSumGen[A](gens: List[Gen[A]], config: Option[Conf[A]]): Gen[A] =
       config.fold(gens.head)(_.select(gens))
 
-  test("configured.customConf via explicit call without conf in scope") {
+  test("custom conf via explicit call without conf in scope") {
     equalArbitraryValues[ABC](Gen.const(ABC.A))(using confExample.deriveArbitrary)
   }
 
-  test("configured.customConf via explicit call with conf in scope") {
+  test("custom conf via explicit call with conf in scope") {
     given Conf[ABC] = lastConf
     equalArbitraryValues[ABC](Gen.const(ABC.C))(using confExample.deriveArbitrary)
   }
 
-  test("configured.customConf via given import without conf in scope") {
+  test("custom conf via given import without conf in scope") {
     import confExample.given
     equalArbitraryValues[ABC](Gen.const(ABC.A))
   }
 
-  test("configured.customConf via given import with conf in scope") {
+  test("custom conf via given import with conf in scope") {
     import confExample.given
     given Conf[ABC] = lastConf
     equalArbitraryValues[ABC](Gen.const(ABC.C))

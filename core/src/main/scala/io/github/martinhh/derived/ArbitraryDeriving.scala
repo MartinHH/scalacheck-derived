@@ -88,15 +88,30 @@ private object Gens:
 
 /**
  * Derivation of `Arbitrary`s.
+ *
+ * @tparam SumConfig Type of an (optional) configuration that allows to configure how the `Gen`-instances of the various
+ *                   subtypes of a sum type (i.e. of a sealed trait or enum) are combined to a single `Gen`. See
+ *                   `buildSumGen` for its usage.
  */
-private trait ArbitraryDeriving[SumConfig[_]]:
+trait ArbitraryDeriving[SumConfig[_]]:
+
+  /**
+   * The logic for combining the `Gen`-instances of the various subtypes of a sum type (i.e. of a sealed trait or enum).
+   *
+   * This can be overridden to customize that logic.
+   *
+   * @param gens `Gen`-instances for all subtypes of a sum type.
+   * @param config Optional configuration object - if a given instance of `SumConfig[A]` is in implicit scope of
+   *               derivation, this will be a non-empty option containing that instance. Otherwise, this will be `None`.
+   * @tparam A The "parent" sum type.
+   * @return A `Gen` that was build based on the passed `Gen`s.
+   */
+  protected def buildSumGen[A](gens: List[Gen[A]], config: Option[SumConfig[A]]): Gen[A]
 
   private inline def sumGen[A](gens: List[Gen[A]]): Gen[A] =
     buildSumGen(gens, configOpt)
 
-  protected def buildSumGen[A](gens: List[Gen[A]], fallbackGen: Option[SumConfig[A]]): Gen[A]
-
-  protected inline def configOpt[A]: Option[SumConfig[A]] =
+  private inline def configOpt[A]: Option[SumConfig[A]] =
     summonFrom {
       case rf: SumConfig[A] => Some(rf)
       case _                => None
@@ -112,7 +127,7 @@ private trait ArbitraryDeriving[SumConfig[_]]:
    * }}}
    */
   @annotation.nowarn("msg=unused") // needed due to https://github.com/lampepfl/dotty/issues/18564
-  inline def deriveArbitrary[T](using m: Mirror.Of[T]): Arbitrary[T] =
+  final inline def deriveArbitrary[T](using m: Mirror.Of[T]): Arbitrary[T] =
     // make derivation available as given (so that dependencies of factories like
     // Arbitrary.arbContainer can be derived):
     import scalacheck.anyGivenArbitrary
@@ -127,8 +142,7 @@ private trait ArbitraryDeriving[SumConfig[_]]:
    *
    * Existing given instances (that are in scope) will be preferred over derivation.
    *
-   * Importing this will add derivation as fallback to implicit resolution of `Arbitrary`-
-   * instances.
+   * Importing this will add derivation as fallback to implicit resolution of `Arbitrary`-instances.
    *
    * Note that the following will not work and result in an "Infinite loop in function body":
    * {{{
@@ -137,7 +151,7 @@ private trait ArbitraryDeriving[SumConfig[_]]:
    * }}}
    * If you intend to derive `Arbitrary`-instances in that way, use `deriveArbitrary` instead.
    */
-  inline given anyGivenArbitrary[T]: Arbitrary[T] =
+  final inline given anyGivenArbitrary[T]: Arbitrary[T] =
     summonFrom {
       case a: Arbitrary[T] =>
         a
@@ -156,19 +170,22 @@ private object ArbitraryDeriving:
     new ArbitraryDeriving[Conf]:
       override protected def buildSumGen[A](
         gens: List[Gen[A]],
-        fallbackGen: Option[Conf[A]]
+        config: Option[Conf[A]]
       ): Gen[A] =
-        sumGenFactory(gens, fallbackGen)
+        sumGenFactory(gens, config)
 
-private trait DefaultArbitraryDeriving extends ArbitraryDeriving[RecursionFallback]:
+/**
+ * Default implementation of derivation of `Arbitrary`s.
+ */
+trait DefaultArbitraryDeriving extends ArbitraryDeriving[RecursionFallback]:
 
-  override protected def buildSumGen[A](
+  override final protected def buildSumGen[A](
     gens: List[Gen[A]],
-    fallbackGen: Option[RecursionFallback[A]]
+    config: Option[RecursionFallback[A]]
   ): Gen[A] =
     Gen.sized { size =>
       if (size <= 0) {
-        fallbackGen.fold(Gen.fail)(_.fallbackGen)
+        config.fold(Gen.fail)(_.fallbackGen)
       } else {
         Gen.resize(size - 1, genOneOf(gens))
       }

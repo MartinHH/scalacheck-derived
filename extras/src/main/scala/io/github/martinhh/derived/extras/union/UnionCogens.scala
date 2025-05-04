@@ -22,11 +22,11 @@ private def toCogen[A](utc: UnionTypedCogens[A]): Cogen[A] =
     seedOpt.get
   }
 
-private trait UnionCogens:
-  transparent inline given unionTypedCogensMacro[X]: UnionTypedCogens[X] =
+trait UnionCogens:
+  transparent inline final given unionTypedCogensMacro[X]: UnionTypedCogens[X] =
     io.github.martinhh.derived.extras.union.unionTypedCogensMacro
 
-  transparent inline given cogenUnion[X](
+  transparent inline final given cogenUnion[X](
     using @implicitNotFound(
       "Could not find a given instance for UnionTypedCogens[${X}].\n" +
         "Reason might be that ${X} is not a union or (if ${X} is a union)\n" +

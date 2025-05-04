@@ -13,12 +13,12 @@ private type UnionArbs[A] = UnionTypeClasses[Arbitrary, A]
 private def toGen[A](utc: UnionArbs[A]): Gen[A] =
   genOneOf(utc.instances.map(_.instance.arbitrary))
 
-private trait UnionArbitraries:
+trait UnionArbitraries:
 
-  transparent inline given unionGensMacro[X]: UnionArbs[X] =
+  transparent inline final given unionGensMacro[X]: UnionArbs[X] =
     io.github.martinhh.derived.extras.union.unionTypedGensMacro[X]
 
-  transparent inline given arbUnion[X](
+  transparent inline final given arbUnion[X](
     using @implicitNotFound(
       "Could not find a given instance for UnionArbs[${X}].\n" +
         "Reason might be that ${X} is not a union or (if ${X} is a union)\n" +

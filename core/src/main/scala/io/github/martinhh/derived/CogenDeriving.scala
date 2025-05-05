@@ -57,14 +57,14 @@ trait CogenDeriving:
     cogenTuple.contramap[T](productToMirroredElemTypes(p)(_))
 
   @annotation.nowarn("msg=unused") // needed due to https://github.com/lampepfl/dotty/issues/18564
-  inline def deriveCogen[T](using m: Mirror.Of[T]): Cogen[T] =
+  inline final def deriveCogen[T](using m: Mirror.Of[T]): Cogen[T] =
     import io.github.martinhh.derived.cogen.anyGivenCogen
     given cogen: Cogen[T] = inline m match
       case s: Mirror.SumOf[T]     => cogenSum(s)
       case p: Mirror.ProductOf[T] => cogenProduct(p)
     cogen
 
-  inline given anyGivenCogen[T]: Cogen[T] =
+  inline final given anyGivenCogen[T]: Cogen[T] =
     summonFrom {
       case c: Cogen[T] => c
       case s: Mirror.SumOf[T] =>

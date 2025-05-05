@@ -13,12 +13,12 @@ import org.scalacheck.Gen
  * (e.g. the "leaf" of a recursive tree).
  */
 sealed trait RecursionFallback[A]:
-  private[derived] def gen: Gen[A]
+  def fallbackGen: Gen[A]
 
 object RecursionFallback:
   def apply[A](genA: Gen[A]): RecursionFallback[A] =
     new RecursionFallback[A]:
-      override private[derived] def gen = genA
+      override def fallbackGen: Gen[A] = genA
 
   def apply[A](a: A): RecursionFallback[A] = apply(Gen.const(a))
 

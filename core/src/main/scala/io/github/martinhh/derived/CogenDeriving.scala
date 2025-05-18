@@ -3,6 +3,7 @@ package io.github.martinhh.derived
 import io.github.martinhh.deriving.*
 import org.scalacheck.Cogen
 
+import scala.annotation.implicitNotFound
 import scala.compiletime.summonAll
 import scala.compiletime.summonInline
 import scala.compiletime.summonFrom
@@ -22,6 +23,9 @@ object CogenSumInstanceSummoner
 trait CogenDeriving:
 
   private inline def cogenSum[T](s: Mirror.SumOf[T]): Cogen[T] =
+    @implicitNotFound(
+      "Derivation failed. No given instance of type Summoner[${E}] was found. This is most likely due to no Cogen[${E}] being available"
+    )
     type Summoner[E] = CogenSumInstanceSummoner[T, E]
     def elems = summonAll[Tuple.Map[s.MirroredElemTypes, Summoner]].toList
       .asInstanceOf[List[Summoner[T]]]

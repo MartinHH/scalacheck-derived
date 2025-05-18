@@ -3,6 +3,7 @@ package io.github.martinhh.derived
 import io.github.martinhh.deriving.*
 import org.scalacheck.Shrink
 
+import scala.annotation.implicitNotFound
 import scala.annotation.tailrec
 import scala.compiletime.constValue
 import scala.compiletime.summonAll
@@ -24,6 +25,11 @@ private object ShrinkSumInstanceSummoner
 trait ShrinkDeriving:
 
   private inline def shrinkSum[T](s: Mirror.SumOf[T]): Shrink[T] =
+    // note that this will most certainly never come to effect due to `org.scalacheck.Shrink.shrinkAny]`
+    // being in scope as fallback for any `Shrink[E]`
+    @implicitNotFound(
+      "Derivation failed. No given instance of type Summoner[${E}] was found. This is most likely due to no Shrink[${E}] being available"
+    )
     type Summoner[E] = ShrinkSumInstanceSummoner[T, E]
     def elems = summonAll[Tuple.Map[s.MirroredElemTypes, Summoner]].toList
       .asInstanceOf[List[Summoner[T]]]

@@ -8,4 +8,4 @@ addSbtPlugin("org.scala-native" % "sbt-scala-native" % "0.5.7")
 
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.5.4")
 
-addSbtPlugin("com.github.sbt" % "sbt-ci-release" % "1.11.0-RC1")
+addSbtPlugin("com.github.sbt" % "sbt-ci-release" % "1.11.0-RC2")

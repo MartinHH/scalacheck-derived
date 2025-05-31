@@ -66,7 +66,7 @@ trait CogenDeriving:
 
   inline final given anyGivenCogen[T]: Cogen[T] =
     summonFrom {
-      case c: Cogen[T] => c
+      case c: Cogen[T]        => c
       case s: Mirror.SumOf[T] =>
         given cogen: Cogen[T] = cogenSum(s)
         cogen

@@ -4,6 +4,7 @@ import io.github.martinhh.deriving.*
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 
+import scala.annotation.implicitNotFound
 import scala.compiletime.summonAll
 import scala.compiletime.summonFrom
 import scala.compiletime.summonInline
@@ -57,6 +58,9 @@ private object Gens:
     genTuple.map(p.fromProduct(_))
 
   inline def sumInstance[T](s: Mirror.SumOf[T]): SumGens[T] =
+    @implicitNotFound(
+      "Derivation failed. No given instance of type Summoner[${E}] was found. This is most likely due to no Arbitrary[${E}] being available"
+    )
     type Summoner[E] = GensSumInstanceSummoner[T, E]
     val elems = summonAll[Tuple.Map[s.MirroredElemTypes, Summoner]].toList
       .asInstanceOf[List[Summoner[T]]]

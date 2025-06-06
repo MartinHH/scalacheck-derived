@@ -624,6 +624,10 @@ object Tree:
 
   def expectedGen: Gen[Tree] = expectedGenWithFallback(Gen.fail)
 
+sealed trait NonDerivable
+
+enum SumWithNonDerivableMember:
+  case NonDerivableMember(x: NonDerivable)
 
 // format: off
 case class MaxCaseClass(

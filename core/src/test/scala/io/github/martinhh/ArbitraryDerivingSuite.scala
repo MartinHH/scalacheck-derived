@@ -126,6 +126,16 @@ class ArbitraryDerivingSuite extends test.ArbitrarySuite:
     equalArbitraryValues(SealedDiamond.expectedGen)
   }
 
+  test("error message for non derivable members of sum type") {
+    val error: String = compileErrors("summon[Arbitrary[SumWithNonDerivableMember]]")
+    // the exact wording is not a hard requirement...
+    assert(
+      error.contains(
+        "This is most likely due to no Arbitrary[io.github.martinhh.SumWithNonDerivableMember.NonDerivableMember] being available."
+      )
+    )
+  }
+
   // not a hard requirement (just guarding against accidental worsening by refactoring)
   test("supports case classes with up to 26 fields (if -Xmax-inlines=32)") {
     summon[Arbitrary[MaxCaseClass]]

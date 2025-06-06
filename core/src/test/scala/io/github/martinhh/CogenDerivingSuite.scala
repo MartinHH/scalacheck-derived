@@ -98,6 +98,16 @@ class CogenDerivingSuite extends test.CogenSuite:
     // proven because it compiles
   }
 
+  test("error message for non derivable members of sum type") {
+    val error: String = compileErrors("summon[Cogen[SumWithNonDerivableMember]]")
+    // the exact wording is not a hard requirement...
+    assert(
+      error.contains(
+        "This is most likely due to no Cogen[io.github.martinhh.SumWithNonDerivableMember.NonDerivableMember] being available."
+      )
+    )
+  }
+
   // (should support as least as many fields as ArbitraryDeriving)
   test("supports case classes with up to 26 fields (if -Xmax-inlines=32)") {
     summon[Cogen[MaxCaseClass]]

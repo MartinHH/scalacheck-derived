@@ -128,7 +128,9 @@ trait ArbitraryDeriving[SumConfig[_]]:
   final inline def deriveArbitraryShallow[T](using m: Mirror.Of[T]): Arbitrary[T] =
     inline m match
       case s: Mirror.SumOf[T] =>
-        Arbitrary(sumGen(Gens.sumInstance(s).gens))
+        // given to support recursion
+        given a: Arbitrary[T] = Arbitrary(sumGen(Gens.sumInstance(s).gens))
+        a
       case p: Mirror.ProductOf[T] =>
         Arbitrary(Gens.productGen(p))
 

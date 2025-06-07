@@ -52,9 +52,7 @@ class ArbitraryDerivingSuite extends test.ArbitrarySuite:
     )
   }
 
-  test(
-    "deriveArbitraryShallow succeeds for case class containing another case class if an instance for that is available"
-  ) {
+  test("deriveArbitraryShallow succeeds simple case class") {
     given Arbitrary[SimpleCaseClass] = Arbitrary(SimpleCaseClass.expectedGen)
     equalArbitraryValues(AbstractSubClass.SubclassA.expectedGen)(
       using derived.arbitrary.deriveArbitraryShallow
@@ -98,6 +96,24 @@ class ArbitraryDerivingSuite extends test.ArbitrarySuite:
       )
     equalArbitraryValues(expectedGen)(
       using derived.arbitrary.deriveArbitraryShallow[Maybe[Foo]]
+    )
+  }
+
+  test("deriveArbitraryShallow supports recursive sum types") {
+    equalArbitraryValues(Tree.expectedGen)(
+      using derived.arbitrary.deriveArbitraryShallow
+    )
+  }
+
+  test("deriveArbitraryShallow supports nested sealed traits (with diamond inheritance)") {
+    equalArbitraryValues(SealedDiamond.expectedGen)(
+      using derived.arbitrary.deriveArbitraryShallow
+    )
+  }
+
+  test("deriveArbitraryShallow supports nested sealed traits (with recursion)") {
+    equalArbitraryValues(NestedSumsRecursiveList.expectedGen[Int])(
+      using derived.arbitrary.deriveArbitraryShallow
     )
   }
 

@@ -125,6 +125,15 @@ trait ArbitraryDeriving[SumConfig[_]]:
       case _                => None
     }
 
+  final inline def deriveArbitraryShallow[T](using m: Mirror.Of[T]): Arbitrary[T] =
+    inline m match
+      case s: Mirror.SumOf[T] =>
+        // given to support recursion
+        given a: Arbitrary[T] = Arbitrary(sumGen(Gens.sumInstance(s).gens))
+        a
+      case p: Mirror.ProductOf[T] =>
+        Arbitrary(Gens.productGen(p))
+
   /**
    * Derives an `Arbitrary[T]`, ignoring any `given Arbitrary[T]` that is already in scope.
    *
@@ -141,7 +150,9 @@ trait ArbitraryDeriving[SumConfig[_]]:
     import scalacheck.anyGivenArbitrary
     inline m match
       case s: Mirror.SumOf[T] =>
-        Arbitrary(sumGen(Gens.sumInstance(s).gens))
+        // given to support recursion (without falling back to the above import
+        given a: Arbitrary[T] = Arbitrary(sumGen(Gens.sumInstance(s).gens))
+        a
       case p: Mirror.ProductOf[T] =>
         Arbitrary(Gens.productGen(p))
 

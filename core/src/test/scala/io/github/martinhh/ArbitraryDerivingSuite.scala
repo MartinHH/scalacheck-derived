@@ -28,6 +28,15 @@ class ArbitraryDerivingSuite extends test.ArbitrarySuite:
     )
   }
 
+  test("deriveArbitrary uses existing givens for subtypes of sumtypes (instead of deriving them)") {
+    enum MinimalADT:
+      case Foo(x: Int)
+    val genFoo: Gen[MinimalADT.Foo] = Gen.const(MinimalADT.Foo(123))
+    given Arbitrary[MinimalADT.Foo] = Arbitrary(genFoo)
+    val expectedGen: Gen[MinimalADT] = genFoo
+    equalArbitraryValues(expectedGen)(using derived.arbitrary.deriveArbitrary[MinimalADT])
+  }
+
   import io.github.martinhh.derived.arbitrary.given
 
   test("Generates same values as non-derived Gen (for simple case class)") {
@@ -61,6 +70,15 @@ class ArbitraryDerivingSuite extends test.ArbitrarySuite:
 
   test("given derivation does not take precedence over existing givens") {
     equalArbitraryValues(HasGivenInstances.specialHasGivenInstancesArbitrary.arbitrary)
+  }
+
+  test("given derivation does not take precedence over existing givens for subtypes of sumtypes") {
+    enum MinimalADT:
+      case Foo(x: Int)
+    val genFoo: Gen[MinimalADT.Foo] = Gen.const(MinimalADT.Foo(123))
+    given Arbitrary[MinimalADT.Foo] = Arbitrary(genFoo)
+    val expectedGen: Gen[MinimalADT] = genFoo
+    equalArbitraryValues(expectedGen)
   }
 
   test("given derivation of child-instances does not take precedence over existing givens") {

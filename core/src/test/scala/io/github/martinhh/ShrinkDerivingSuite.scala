@@ -35,6 +35,13 @@ class ShrinkDerivingSuite extends test.ShrinkSuite:
     )
   }
 
+  test("deriveShrink uses existing givens for subtypes of sumtypes (instead of deriving them)") {
+    equalShrinkValues(ADTWithGivenInstancesForSubtype.expectedShrink)(
+      using anyGivenArbitrary,
+      derived.shrink.deriveShrink
+    )
+  }
+
   import io.github.martinhh.derived.shrink.given
 
   property("shrinks to the same values as non-derived expected Shrink (for simple case class)") {
@@ -61,6 +68,12 @@ class ShrinkDerivingSuite extends test.ShrinkSuite:
 
   property("given derivation does not take precedence over existing givens") {
     equalShrinkValues(HasGivenInstances.specialHasGivenInstancesShrink)
+  }
+
+  property(
+    "given derivation does not take precedence over existing givens for subtypes of sumtypes"
+  ) {
+    equalShrinkValues(ADTWithGivenInstancesForSubtype.expectedShrink)
   }
 
   property("given derivation of child-instances does not take precedence over existing givens") {

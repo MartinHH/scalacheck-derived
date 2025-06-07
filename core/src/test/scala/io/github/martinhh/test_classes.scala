@@ -643,6 +643,10 @@ object ADTWithGivenInstancesForSubtype:
     given subtypeWithInstancesCogen: Cogen[SubtypeWithInstances] =
       Cogen.cogenInt.contramap((s: SubtypeWithInstances) => s.x * 42)
 
+    @annotation.nowarn("cat=deprecation")
+    given subtypeWithInstancesShrink: Shrink[SubtypeWithInstances] =
+      Shrink.withLazyList(_ => LazyList(1, 2, 3).map(SubtypeWithInstances(_)))
+
   val expectedGen: Gen[ADTWithGivenInstancesForSubtype] =
     SubtypeWithInstances.subtypeWithInstancesArb.arbitrary
 
@@ -655,6 +659,12 @@ object ADTWithGivenInstancesForSubtype:
             0
           )
       }
+    }
+
+  @annotation.nowarn("cat=deprecation")
+  val expectedShrink: Shrink[ADTWithGivenInstancesForSubtype] =
+    Shrink { case swi: SubtypeWithInstances =>
+      SubtypeWithInstances.subtypeWithInstancesShrink.shrink(swi)
     }
   
 // format: off

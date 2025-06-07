@@ -661,7 +661,6 @@ object ADTWithGivenInstancesForSubtype:
       }
     }
 
-  @annotation.nowarn("cat=deprecation")
   val expectedShrink: Shrink[ADTWithGivenInstancesForSubtype] =
     Shrink { case swi: SubtypeWithInstances =>
       SubtypeWithInstances.subtypeWithInstancesShrink.shrink(swi)

@@ -18,7 +18,12 @@ object CogenSumInstanceSummoner
       def deriveOrSummonSumInstance: Cogen[Elem] = makeCogen
 
   override protected inline def derive[Elem]: Cogen[Elem] =
-    cogen.deriveCogen[Elem](using summonInline[Mirror.Of[Elem]])
+    summonFrom {
+      case c: Cogen[Elem] =>
+        c
+      case m: Mirror.Of[Elem] =>
+        cogen.deriveCogen[Elem](using m)
+    }
 
 trait CogenDeriving:
 

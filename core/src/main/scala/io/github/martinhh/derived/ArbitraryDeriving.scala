@@ -1,5 +1,6 @@
 package io.github.martinhh.derived
 
+import io.github.martinhh.derived.Gens.productGen
 import io.github.martinhh.deriving.*
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
@@ -26,7 +27,17 @@ private object GensSumInstanceSummoner
       def deriveOrSummonSumInstance: Gens[Elem] = makeGens
 
   override protected inline def derive[Elem]: Gens[Elem] =
-    Gens.derive[Elem](summonInline[Mirror.Of[Elem]])
+    summonFrom {
+      // nested sealed trait - do not use existing givens for those as that would break specific
+      // mechanisms for those
+      case m: Mirror.SumOf[Elem] =>
+        Gens.sumInstance(m)
+      // prefer existing givens for product types
+      case a: Arbitrary[Elem] =>
+        SingleGen(typeNameMacro[Elem], a.arbitrary)
+      case m: Mirror.ProductOf[Elem] =>
+        SingleGen(typeNameMacro[Elem], productGen(m))
+    }
 
 private object Gens:
 
@@ -70,13 +81,6 @@ private object Gens:
       case (acc, s: SumGens[T])   => acc ++ s.singleGens
     }
     SumGens(combined.distinctBy(_.tag))
-
-  inline def derive[T](m: Mirror.Of[T]): Gens[T] =
-    inline m match
-      case s: Mirror.SumOf[T] =>
-        sumInstance(s)
-      case p: Mirror.ProductOf[T] =>
-        SingleGen(typeNameMacro[T], productGen(p))
 
   inline given derived[T]: Gens[T] =
     summonFrom {

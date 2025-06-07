@@ -629,6 +629,43 @@ sealed trait NonDerivable
 enum SumWithNonDerivableMember:
   case NonDerivableMember(x: NonDerivable)
 
+sealed trait ADTWithGivenInstancesForSubtype
+
+object ADTWithGivenInstancesForSubtype:
+  // the only subtype
+  case class SubtypeWithInstances(x: Int) extends ADTWithGivenInstancesForSubtype
+
+  object SubtypeWithInstances:
+    given subtypeWithInstancesArb: Arbitrary[SubtypeWithInstances] = Arbitrary(
+      Gen.const(SubtypeWithInstances(123))
+    )
+
+    given subtypeWithInstancesCogen: Cogen[SubtypeWithInstances] =
+      Cogen.cogenInt.contramap((s: SubtypeWithInstances) => s.x * 42)
+
+    @annotation.nowarn("cat=deprecation")
+    given subtypeWithInstancesShrink: Shrink[SubtypeWithInstances] =
+      Shrink.withLazyList(_ => LazyList(1, 2, 3).map(SubtypeWithInstances(_)))
+
+  val expectedGen: Gen[ADTWithGivenInstancesForSubtype] =
+    SubtypeWithInstances.subtypeWithInstancesArb.arbitrary
+
+  val expectedCogen: Cogen[ADTWithGivenInstancesForSubtype] =
+    Cogen[ADTWithGivenInstancesForSubtype] { (seed, value) =>
+      value match {
+        case st: SubtypeWithInstances =>
+          Cogen.perturb(
+            Cogen.perturb(seed, st)(using SubtypeWithInstances.subtypeWithInstancesCogen),
+            0
+          )
+      }
+    }
+
+  val expectedShrink: Shrink[ADTWithGivenInstancesForSubtype] =
+    Shrink { case swi: SubtypeWithInstances =>
+      SubtypeWithInstances.subtypeWithInstancesShrink.shrink(swi)
+    }
+  
 // format: off
 case class MaxCaseClass(
   a1: Int, b1: Int, c1: Int, d1: Int, e1: Int, f1: Int, g1: Int, h1: Int, i1: Int, j1: Int,

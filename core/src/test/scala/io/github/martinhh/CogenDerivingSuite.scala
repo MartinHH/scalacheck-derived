@@ -44,6 +44,16 @@ class CogenDerivingSuite extends test.CogenSuite:
     )
   }
 
+  test("deriveCogen uses existing givens for subtypes of sumtypes (instead of deriving them)") {
+    import derived.scalacheck.anyGivenArbitrary
+    import derived.scalacheck.deriveCogen
+    equalCogenValues(ADTWithGivenInstancesForSubtype.expectedCogen)(
+      using arbSeed,
+      anyGivenArbitrary,
+      deriveCogen
+    )
+  }
+
   import derived.scalacheck.given
 
   property("perturbs to same seeds as non-derived expected Cogen (for simple ADT)") {
@@ -62,6 +72,10 @@ class CogenDerivingSuite extends test.CogenSuite:
 
   test("given derivation does not take precedence over existing givens") {
     equalCogenValues(HasGivenInstances.specialHasGivenInstancesCogen)
+  }
+
+  test("given derivation does not take precedence over existing givens for subtypes of sumtypes") {
+    equalCogenValues(ADTWithGivenInstancesForSubtype.expectedCogen)
   }
 
   test("given derivation of child-instances does not take precedence over existing givens") {

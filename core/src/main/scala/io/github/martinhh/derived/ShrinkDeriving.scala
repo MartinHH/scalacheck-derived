@@ -20,7 +20,12 @@ private object ShrinkSumInstanceSummoner
       def deriveOrSummonSumInstance: Shrink[Elem] = makeShrink
 
   override protected inline def derive[Elem]: Shrink[Elem] =
-    shrink.deriveShrink[Elem](using summonInline[Mirror.Of[Elem]])
+    summonFrom {
+      case s: Shrink[Elem] =>
+        s
+      case m: Mirror.Of[Elem] =>
+        shrink.deriveShrink[Elem](using m)
+    }
 
 trait ShrinkDeriving:
 

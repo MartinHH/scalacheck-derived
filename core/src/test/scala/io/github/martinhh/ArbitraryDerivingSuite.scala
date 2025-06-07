@@ -28,6 +28,12 @@ class ArbitraryDerivingSuite extends test.ArbitrarySuite:
     )
   }
 
+  test("deriveArbitrary uses existing givens for subtypes of sumtypes (instead of deriving them)") {
+    equalArbitraryValues(ADTWithGivenInstancesForSubtype.expectedGen)(
+      using derived.arbitrary.deriveArbitrary
+    )
+  }
+
   import io.github.martinhh.derived.arbitrary.given
 
   test("Generates same values as non-derived Gen (for simple case class)") {
@@ -61,6 +67,10 @@ class ArbitraryDerivingSuite extends test.ArbitrarySuite:
 
   test("given derivation does not take precedence over existing givens") {
     equalArbitraryValues(HasGivenInstances.specialHasGivenInstancesArbitrary.arbitrary)
+  }
+
+  test("given derivation does not take precedence over existing givens for subtypes of sumtypes") {
+    equalArbitraryValues(ADTWithGivenInstancesForSubtype.expectedGen)
   }
 
   test("given derivation of child-instances does not take precedence over existing givens") {

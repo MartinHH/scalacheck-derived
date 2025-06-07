@@ -125,6 +125,13 @@ trait ArbitraryDeriving[SumConfig[_]]:
       case _                => None
     }
 
+  final inline def deriveArbitraryShallow[T](using m: Mirror.Of[T]): Arbitrary[T] =
+    inline m match
+      case s: Mirror.SumOf[T] =>
+        Arbitrary(sumGen(Gens.sumInstance(s).gens))
+      case p: Mirror.ProductOf[T] =>
+        Arbitrary(Gens.productGen(p))
+
   /**
    * Derives an `Arbitrary[T]`, ignoring any `given Arbitrary[T]` that is already in scope.
    *

@@ -125,6 +125,28 @@ trait ArbitraryDeriving[SumConfig[_]]:
       case _                => None
     }
 
+  /**
+   * Derives an `Arbitrary[T]`, ignoring any `given Arbitrary[T]` that is already in scope.
+   *
+   * Note that this will ''not'' derive any missing `Arbitrary`-instances for any members of `T` if
+   * `T` is a product type (case class or tuple). It will however derive instances for any subtype
+   * of `T` if `T` is a sum type (sealed trait or enum) - the restriction for product types will then
+   * apply for those subtypes.
+   *
+   * It can be used to explicitly create given instances:
+   * {{{
+   *   case class Point(x: Double, y: Double)
+   *   given Arbitrary[Point] = deriveArbitraryShallow
+   * }}}
+   * 
+   * The following however would fail:
+   * {{{
+   *   case class Foo(x: Int)
+   *   case class Bar(foo: Foo)
+   *   // fails with: No given instance of type org.scalacheck.Arbitrary[Foo] was found.
+   *   given Arbitrary[Bar] = deriveArbitraryShallow
+   * }}}
+   */
   final inline def deriveArbitraryShallow[T](using m: Mirror.Of[T]): Arbitrary[T] =
     inline m match
       case s: Mirror.SumOf[T] =>
@@ -136,6 +158,9 @@ trait ArbitraryDeriving[SumConfig[_]]:
 
   /**
    * Derives an `Arbitrary[T]`, ignoring any `given Arbitrary[T]` that is already in scope.
+   * 
+   * Note that this will recursively derive any missing `Arbitrary`-instances for any members/subtypes
+   * of `T` (unless such instances are already available in implicit scope).
    *
    * This can be used to explicitly create given instances:
    * {{{

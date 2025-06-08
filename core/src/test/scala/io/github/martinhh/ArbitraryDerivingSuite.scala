@@ -34,6 +34,89 @@ class ArbitraryDerivingSuite extends test.ArbitrarySuite:
     )
   }
 
+  test("deriveArbitraryShallow succeeds for simple case class") {
+    equalArbitraryValues(SimpleCaseClass.expectedGen)(
+      using derived.arbitrary.deriveArbitraryShallow
+    )
+  }
+
+  test("deriveArbitraryShallow fails for case class containing another case class") {
+    val error: String =
+      compileErrors("derived.arbitrary.deriveArbitraryShallow[AbstractSubClass.SubclassA]")
+    assert(
+      error.contains(
+        "No given instance of type org.scalacheck.Arbitrary[io.github.martinhh.SimpleCaseClass] was found."
+      )
+    )
+  }
+
+  test(
+    "deriveArbitraryShallow succeeds for case class containing another case class if an instance for that is available"
+  ) {
+    given Arbitrary[SimpleCaseClass] = Arbitrary(SimpleCaseClass.expectedGen)
+    equalArbitraryValues(AbstractSubClass.SubclassA.expectedGen)(
+      using derived.arbitrary.deriveArbitraryShallow
+    )
+  }
+
+  test("deriveArbitraryShallow succeeds for ADT if subclasses are derivable via deriveShallow") {
+    equalArbitraryValues(Maybe.expectedGen[Int])(
+      using derived.arbitrary.deriveArbitraryShallow[Maybe[Int]]
+    )
+  }
+
+  test("deriveArbitraryShallow fails for ADT if a subclass is not derivable via deriveShallow") {
+    val error: String =
+      compileErrors("derived.arbitrary.deriveArbitraryShallow[Maybe[SimpleCaseClass]]")
+    assert(
+      error.contains(
+        "Derivation failed. No given instance of type Summoner[io.github.martinhh.Maybe.Defined[io.github.martinhh.SimpleCaseClass]] was found." +
+          " This is most likely due to no Arbitrary[io.github.martinhh.Maybe.Defined[io.github.martinhh.SimpleCaseClass]] being available."
+      )
+    )
+  }
+
+  test(
+    "deriveArbitraryShallow succeeds for ADT if a subclass is made derivable via deriveShallow by required instances in scope"
+  ) {
+    given Arbitrary[SimpleCaseClass] = Arbitrary(SimpleCaseClass.expectedGen)
+    equalArbitraryValues(Maybe.expectedGen[SimpleCaseClass])(
+      using derived.arbitrary.deriveArbitraryShallow[Maybe[SimpleCaseClass]]
+    )
+  }
+
+  test("deriveArbitraryShallow prefers existing instance for ADT-subtypes") {
+    case class Foo(x: Int)
+    val customGen: Gen[Maybe.Defined[Foo]] = Gen.const(Maybe.Defined(Foo(35)))
+    given Arbitrary[Maybe.Defined[Foo]] = Arbitrary(customGen)
+    val expectedGen: Gen[Maybe[Foo]] =
+      expectedGenOneOf(
+        customGen,
+        Gen.const(Maybe.Undefined)
+      )
+    equalArbitraryValues(expectedGen)(
+      using derived.arbitrary.deriveArbitraryShallow[Maybe[Foo]]
+    )
+  }
+
+  test("deriveArbitraryShallow supports recursive sum types") {
+    equalArbitraryValues(Tree.expectedGen)(
+      using derived.arbitrary.deriveArbitraryShallow
+    )
+  }
+
+  test("deriveArbitraryShallow supports nested sealed traits (with diamond inheritance)") {
+    equalArbitraryValues(SealedDiamond.expectedGen)(
+      using derived.arbitrary.deriveArbitraryShallow
+    )
+  }
+
+  test("deriveArbitraryShallow supports nested sealed traits (with recursion)") {
+    equalArbitraryValues(NestedSumsRecursiveList.expectedGen[Int])(
+      using derived.arbitrary.deriveArbitraryShallow
+    )
+  }
+
   import io.github.martinhh.derived.arbitrary.given
 
   test("Generates same values as non-derived Gen (for simple case class)") {

@@ -5,6 +5,6 @@ import org.scalacheck.Gen
 
 import scala.compiletime.summonInline
 
-trait LiteralArbitraries:
+private trait LiteralArbitraries:
 
   final given arbLiteral[A](using v: ValueOf[A]): Arbitrary[A] = Arbitrary(Gen.const(v.value))

@@ -13,7 +13,7 @@ private type UnionArbs[A] = UnionTypeClasses[Arbitrary, A]
 private def toGen[A](utc: UnionArbs[A]): Gen[A] =
   genOneOf(utc.instances.map(_.instance.arbitrary))
 
-trait UnionArbitraries:
+private trait UnionArbitraries:
 
   transparent inline final given unionGensMacro[X]: UnionArbs[X] =
     io.github.martinhh.derived.extras.union.unionTypedGensMacro[X]

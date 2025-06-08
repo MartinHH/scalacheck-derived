@@ -27,7 +27,7 @@ private object ShrinkSumInstanceSummoner
         shrink.deriveShrink[Elem](using m)
     }
 
-trait ShrinkDeriving:
+private trait ShrinkDeriving:
 
   private inline def shrinkSum[T](s: Mirror.SumOf[T]): Shrink[T] =
     // note that this will most certainly never come to effect due to `org.scalacheck.Shrink.shrinkAny]`

@@ -25,7 +25,7 @@ object CogenSumInstanceSummoner
         cogen.deriveCogen[Elem](using m)
     }
 
-trait CogenDeriving:
+private trait CogenDeriving:
 
   private inline def cogenSum[T](s: Mirror.SumOf[T]): Cogen[T] =
     @implicitNotFound(

@@ -665,6 +665,19 @@ object ADTWithGivenInstancesForSubtype:
     Shrink { case swi: SubtypeWithInstances =>
       SubtypeWithInstances.subtypeWithInstancesShrink.shrink(swi)
     }
+
+sealed trait SealedTraitWithGivenInstanceForSubtrait
+
+object SealedTraitWithGivenInstanceForSubtrait:
+
+  sealed trait Subtrait extends SealedTraitWithGivenInstanceForSubtrait
+
+  object Subtrait:
+    given subtraitArb: Arbitrary[Subtrait] = Arbitrary(Gen.const(Foo(123)))
+
+  case class Foo(x: Int) extends Subtrait
+
+  val expectedGen: Gen[SealedTraitWithGivenInstanceForSubtrait] = Subtrait.subtraitArb.arbitrary
   
 // format: off
 case class MaxCaseClass(

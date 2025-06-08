@@ -138,7 +138,7 @@ trait ArbitraryDeriving[SumConfig[_]]:
    *   case class Point(x: Double, y: Double)
    *   given Arbitrary[Point] = deriveArbitraryShallow
    * }}}
-   * 
+   *
    * The following however would fail:
    * {{{
    *   case class Foo(x: Int)
@@ -158,7 +158,7 @@ trait ArbitraryDeriving[SumConfig[_]]:
 
   /**
    * Derives an `Arbitrary[T]`, ignoring any `given Arbitrary[T]` that is already in scope.
-   * 
+   *
    * Note that this will recursively derive any missing `Arbitrary`-instances for any members/subtypes
    * of `T` (unless such instances are already available in implicit scope).
    *

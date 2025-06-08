@@ -34,9 +34,7 @@ class ArbitraryDerivingSuite extends test.ArbitrarySuite:
     )
   }
 
-  test(
-    "deriveArbitraryShallow succeeds for case class containing another case class if an instance for that is available"
-  ) {
+  test("deriveArbitraryShallow succeeds for simple case class") {
     equalArbitraryValues(SimpleCaseClass.expectedGen)(
       using derived.arbitrary.deriveArbitraryShallow
     )
@@ -52,7 +50,9 @@ class ArbitraryDerivingSuite extends test.ArbitrarySuite:
     )
   }
 
-  test("deriveArbitraryShallow succeeds simple case class") {
+  test(
+    "deriveArbitraryShallow succeeds for case class containing another case class if an instance for that is available"
+  ) {
     given Arbitrary[SimpleCaseClass] = Arbitrary(SimpleCaseClass.expectedGen)
     equalArbitraryValues(AbstractSubClass.SubclassA.expectedGen)(
       using derived.arbitrary.deriveArbitraryShallow

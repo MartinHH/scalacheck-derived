@@ -26,7 +26,7 @@ libraryDependencies ++= Seq(
 
 ## Usage
 
-There are two ways of using this library. Let's look at them by examples using the following
+There are three ways of using this library. Let's look at them by examples using the following
 (example) data structure:
 
 ```
@@ -38,7 +38,7 @@ case class Magazine(title: String, issue: Int, color: Color) extends LibItem
 case class Book(title: String, author: String, color: Color) extends LibItem
 ```
 
-### a) fully implicit
+### a) fully implicit (fully recursive)
 
 By importing `io.github.martinhh.derived.scalacheck.given`, you enable implicit resolution of
 derived instances so that you can do this:
@@ -52,10 +52,13 @@ Prop.forAll { (item: LibItem) =>
 }
 ```
 
+This will recursively derive any missing instances (for members of case classes & tuples and for subtypes of sealed
+traits & enums).
+
 Note that while this is convenient, this style of "ad-hoc-derivation" comes with the risk of instance being derived
 redundantly, potentially leading to overhead in compilation times that could be avoided.
 
-### b) derive explicitly
+### b) derive explicitly (fully recursive)
 
 Alternatively, you can use `io.github.martinhh.derived.scalacheck.deriveArbitrary` to explicitly
 derive instances where you need them:
@@ -66,6 +69,27 @@ import org.scalacheck.Arbitrary
 
 given arbLibItem: Arbitrary[LibItem] = deriveArbitrary
 ```
+
+Just like the "fully implicit" approach, this will recursively derive any missing instances.
+
+### c) derive explicitly ("shallow")
+
+If you'd like more control over what is being derived, you can use 
+`io.github.martinhh.derived.scalacheck.deriveArbitraryShallow` to explicitly
+derive instances:
+
+```
+import io.github.martinhh.derived.scalacheck.deriveArbitraryShallow
+import org.scalacheck.Arbitrary
+
+given arbColor: Arbitrary[Color] = deriveArbitraryShallow
+given arbLibItem: Arbitrary[LibItem] = deriveArbitraryShallow
+```
+
+`deriveArbitraryShallow` will not derive missing instances for members of case classes & tuples. In the above example,
+the line `given arbColor: Arbitrary[Color] = deriveArbitraryShallow` is required because without a 
+`given Arbitrary[Color]` in scope, derivation of `Arbitrary[LibItem]` would fail.
+
 
 ### Deriving `Shrink`-instances
 
@@ -112,6 +136,10 @@ If that does not help (or if you are not able to use those versions), there are 
 1. use `-Xmax-inlines` compiler setting to increase the limit
 2. instead of deriving an `Arbitrary` for the whole structure at once, derive "intermediate"
    instances for some of its members (and place them into implicit scope).
+
+### Known bugs
+
+Additionally, there may be known bugs - you can check for those [here](https://github.com/MartinHH/scalacheck-derived/issues?q=is%3Aissue%20state%3Aopen%20label%3Abug).
 
 ## Version matrix
 

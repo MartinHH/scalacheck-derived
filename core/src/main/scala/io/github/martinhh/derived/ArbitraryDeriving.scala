@@ -18,12 +18,16 @@ private case class SumGens[T](singleGens: List[SingleGen[T]]) extends Gens[T]:
 
 private case class SingleGen[T](tag: Gens.TypeId, gen: Gen[T]) extends Gens[T]
 
-private trait GensSumInstanceSummoner[T, Elem] extends SumInstanceSummoner[T, Elem, Gens]
+/**
+ * Default implementation of `SumInstanceSummoner` for `Gens`.
+ *
+ * Derives missing instances for products.
+ */
+private trait DefaultGensSummoner[T, Elem] extends SumInstanceSummoner[T, Elem, Gens]
 
-private object GensSumInstanceSummoner
-  extends SumInstanceSummonerCompanion[Gens, GensSumInstanceSummoner]:
-  protected def apply[T, Elem](makeGens: => Gens[Elem]): GensSumInstanceSummoner[T, Elem] =
-    new GensSumInstanceSummoner[T, Elem]:
+private object DefaultGensSummoner extends SumInstanceSummonerCompanion[Gens, DefaultGensSummoner]:
+  protected def apply[T, Elem](makeGens: => Gens[Elem]): DefaultGensSummoner[T, Elem] =
+    new DefaultGensSummoner[T, Elem]:
       def deriveOrSummonSumInstance: Gens[Elem] = makeGens
 
   override protected inline def derive[Elem]: Gens[Elem] =
@@ -31,12 +35,37 @@ private object GensSumInstanceSummoner
       // nested sealed trait - do not use existing givens for those as that would break specific
       // mechanisms for those
       case m: Mirror.SumOf[Elem] =>
-        Gens.sumInstance(m)
+        Gens.sumInstance[Elem, DefaultGensSummoner](m)
       // prefer existing givens for product types
       case a: Arbitrary[Elem] =>
         SingleGen(typeNameMacro[Elem], a.arbitrary)
       case m: Mirror.ProductOf[Elem] =>
         SingleGen(typeNameMacro[Elem], productGen(m))
+    }
+
+/**
+ * "Extra-shallow" implementation of `SumInstanceSummoner` for `Gens`.
+ *
+ * Does not derive missing instances for products.
+ */
+private trait ExtraShallowGensSummoner[T, Elem] extends SumInstanceSummoner[T, Elem, Gens]
+
+private object ExtraShallowGensSummoner
+  extends SumInstanceSummonerCompanion[Gens, ExtraShallowGensSummoner]:
+  protected def apply[T, Elem](makeGens: => Gens[Elem]): ExtraShallowGensSummoner[T, Elem] =
+    new ExtraShallowGensSummoner[T, Elem]:
+      def deriveOrSummonSumInstance: Gens[Elem] = makeGens
+
+  override protected inline def derive[Elem]: Gens[Elem] =
+    summonFrom {
+      // nested sealed trait - do not use existing givens for those as that would break specific
+      // mechanisms for those
+      case m: Mirror.SumOf[Elem] =>
+        Gens.sumInstance[Elem, DefaultGensSummoner](m)
+      // use existing givens
+      case a: Arbitrary[Elem] =>
+        SingleGen(typeNameMacro[Elem], a.arbitrary)
+      // do not derive for products
     }
 
 private object Gens:
@@ -68,11 +97,13 @@ private object Gens:
       .asInstanceOf[Gen[p.MirroredElemTypes]]
     genTuple.map(p.fromProduct(_))
 
-  inline def sumInstance[T](s: Mirror.SumOf[T]): SumGens[T] =
+  inline def sumInstance[T, S[A, B] <: SumInstanceSummoner[A, B, Gens]](
+    s: Mirror.SumOf[T]
+  ): SumGens[T] =
     @implicitNotFound(
       "Derivation failed. No given instance of type Summoner[${E}] was found. This is most likely due to no Arbitrary[${E}] being available"
     )
-    type Summoner[E] = GensSumInstanceSummoner[T, E]
+    type Summoner[E] = S[T, E]
     val elems = summonAll[Tuple.Map[s.MirroredElemTypes, Summoner]].toList
       .asInstanceOf[List[Summoner[T]]]
       .map(_.deriveOrSummonSumInstance)
@@ -89,7 +120,7 @@ private object Gens:
       // both cases below are coded out (instead of just delegating to derive) to saves us some
       // nested inlining (so that we do not hit the Xmaxinlines limit as quickly)
       case s: Mirror.SumOf[T] =>
-        sumInstance(s)
+        sumInstance[T, DefaultGensSummoner](s)
       case p: Mirror.ProductOf[T] =>
         SingleGen(typeNameMacro[T], productGen(p))
     }
@@ -151,7 +182,46 @@ private[martinhh] trait ArbitraryDeriving[SumConfig[_]]:
     inline m match
       case s: Mirror.SumOf[T] =>
         // given to support recursion
-        given a: Arbitrary[T] = Arbitrary(sumGen(Gens.sumInstance(s).gens))
+        given a: Arbitrary[T] = Arbitrary(sumGen(Gens.sumInstance[T, DefaultGensSummoner](s).gens))
+        a
+      case p: Mirror.ProductOf[T] =>
+        Arbitrary(Gens.productGen(p))
+
+  /**
+   * Derives an `Arbitrary[T]`, ignoring any `given Arbitrary[T]` that is already in scope.
+   *
+   * Note that this will ''not'' derive any missing `Arbitrary`-instances for any members of `T` if
+   * `T` is a product type (case class or tuple) nor will it derive instances for any subtype
+   * of `T` if `T` is a sum type (sealed trait or enum).
+   *
+   * It can be used to explicitly create given instances:
+   * {{{
+   *   case class Point(x: Double, y: Double)
+   *   given Arbitrary[Point] = deriveArbitraryShallow
+   * }}}
+   *
+   * The following however would fail:
+   * {{{
+   *   case class Foo(x: Int)
+   *   case class Bar(foo: Foo)
+   *   // fails with: No given instance of type org.scalacheck.Arbitrary[Foo] was found.
+   *   given Arbitrary[Bar] = deriveArbitraryShallow
+   * }}}
+   *
+   * The following would fail as well (which is the difference to `deriveArbitraryShallow`):
+   * {{{
+   *   sealed trait Foo
+   *   case class Bar(x: Int) extends Foo
+   *   given Arbitrary[Foo] = deriveArbitraryShallow
+   * }}}
+   */
+  final inline def deriveArbitraryExtraShallow[T](using m: Mirror.Of[T]): Arbitrary[T] =
+    inline m match
+      case s: Mirror.SumOf[T] =>
+        // given to support recursion
+        given a: Arbitrary[T] = Arbitrary(
+          sumGen(Gens.sumInstance[T, ExtraShallowGensSummoner](s).gens)
+        )
         a
       case p: Mirror.ProductOf[T] =>
         Arbitrary(Gens.productGen(p))
@@ -176,7 +246,7 @@ private[martinhh] trait ArbitraryDeriving[SumConfig[_]]:
     inline m match
       case s: Mirror.SumOf[T] =>
         // given to support recursion (without falling back to the above import
-        given a: Arbitrary[T] = Arbitrary(sumGen(Gens.sumInstance(s).gens))
+        given a: Arbitrary[T] = Arbitrary(sumGen(Gens.sumInstance[T, DefaultGensSummoner](s).gens))
         a
       case p: Mirror.ProductOf[T] =>
         Arbitrary(Gens.productGen(p))
@@ -200,7 +270,8 @@ private[martinhh] trait ArbitraryDeriving[SumConfig[_]]:
       case a: Arbitrary[T] =>
         a
       case s: Mirror.SumOf[T] =>
-        given arb: Arbitrary[T] = Arbitrary(sumGen(Gens.sumInstance(s).gens))
+        given arb: Arbitrary[T] =
+          Arbitrary(sumGen(Gens.sumInstance[T, DefaultGensSummoner](s).gens))
         arb
       case p: Mirror.ProductOf[T] =>
         given arb: Arbitrary[T] = Arbitrary(Gens.productGen(p))

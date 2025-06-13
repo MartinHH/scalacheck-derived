@@ -117,6 +117,55 @@ class ArbitraryDerivingSuite extends test.ArbitrarySuite:
     )
   }
 
+  test("deriveArbitraryExtraShallow succeeds for simple case class") {
+    equalArbitraryValues(SimpleCaseClass.expectedGen)(
+      using derived.arbitrary.deriveArbitraryExtraShallow
+    )
+  }
+
+  test("deriveArbitraryExtraShallow fails for case class containing another case class") {
+    val error: String =
+      compileErrors("derived.arbitrary.deriveArbitraryExtraShallow[AbstractSubClass.SubclassA]")
+    assert(
+      error.contains(
+        "No given instance of type org.scalacheck.Arbitrary[io.github.martinhh.SimpleCaseClass] was found."
+      )
+    )
+  }
+
+  test(
+    "deriveArbitraryExtraShallow succeeds for case class containing another case class if an instance for that is available"
+  ) {
+    given Arbitrary[SimpleCaseClass] = Arbitrary(SimpleCaseClass.expectedGen)
+
+    equalArbitraryValues(AbstractSubClass.SubclassA.expectedGen)(
+      using derived.arbitrary.deriveArbitraryExtraShallow
+    )
+  }
+
+  test("deriveArbitraryExtraShallow fails for simple adt if no instances for that are in scope") {
+    val error: String =
+      compileErrors("derived.arbitrary.deriveArbitraryExtraShallow[SimpleADT]")
+    assert(
+      error.contains(
+        "Derivation failed. No given instance of type Summoner[io.github.martinhh.SimpleCaseObject.type] was found." +
+          " This is most likely due to no Arbitrary[io.github.martinhh.SimpleCaseObject.type] being available."
+      )
+    )
+  }
+
+  test(
+    "deriveArbitraryExtraShallow succeeds for simple adt if instances for all subtypes are available"
+  ) {
+    given simpleCaseClassArb: Arbitrary[SimpleCaseClass] =
+      Arbitrary(Gen.const(SimpleCaseClass(12, "foo", -4.7)))
+    given simpleCaseObjectArb: Arbitrary[SimpleCaseObject.type] =
+      Arbitrary(Gen.const(SimpleCaseObject))
+    val expectedGen: Gen[SimpleADT] =
+      expectedGenOneOf(simpleCaseObjectArb.arbitrary, simpleCaseClassArb.arbitrary)
+    equalArbitraryValues(expectedGen)(using derived.arbitrary.deriveArbitraryExtraShallow)
+  }
+
   import io.github.martinhh.derived.arbitrary.given
 
   test("Generates same values as non-derived Gen (for simple case class)") {

@@ -54,6 +54,101 @@ class CogenDerivingSuite extends test.CogenSuite:
     )
   }
 
+  test("deriveCogenShallow succeeds for simple case class") {
+    equalCogenValues(SimpleCaseClass.expectedCogen)(
+      using summon,
+      derived.scalacheck.deriveArbitrary,
+      derived.cogen.deriveCogenShallow
+    )
+  }
+
+  test("deriveCogenShallow fails for case class containing another case class") {
+    val error: String =
+      compileErrors("derived.cogen.deriveCogenShallow[AbstractSubClass.SubclassA]")
+    assert(
+      error.contains(
+        "No given instance of type org.scalacheck.Cogen[io.github.martinhh.SimpleCaseClass] was found"
+      )
+    )
+  }
+
+  test(
+    "deriveCogenShallow succeeds for case class containing another case class if an instance for that is available"
+  ) {
+    given Cogen[SimpleCaseClass] = SimpleCaseClass.expectedCogen
+
+    equalCogenValues(AbstractSubClass.SubclassA.expectedCogen)(
+      using summon,
+      derived.scalacheck.deriveArbitrary,
+      derived.cogen.deriveCogenShallow
+    )
+  }
+
+  test("deriveCogenShallow succeeds for ADT if subclasses are derivable via deriveShallow") {
+    equalCogenValues(Maybe.expectedCogen[Int])(
+      using summon,
+      derived.scalacheck.deriveArbitrary,
+      derived.cogen.deriveCogenShallow[Maybe[Int]]
+    )
+  }
+
+  test("deriveCogenShallow fails for ADT if a subclass is not derivable via deriveShallow") {
+    val error: String =
+      compileErrors("derived.cogen.deriveCogenShallow[Maybe[SimpleCaseClass]]")
+    assert(
+      error.contains(
+        "Derivation failed. No given instance of type Summoner[io.github.martinhh.Maybe.Defined[io.github.martinhh.SimpleCaseClass]] was found." +
+          " This is most likely due to no Cogen[io.github.martinhh.Maybe.Defined[io.github.martinhh.SimpleCaseClass]] being available."
+      )
+    )
+  }
+
+  test(
+    "deriveCogenShallow succeeds for ADT if a subclass is made derivable via deriveShallow by required instances in scope"
+  ) {
+    given Cogen[SimpleCaseClass] = SimpleCaseClass.expectedCogen
+
+    equalCogenValues(Maybe.expectedCogen[SimpleCaseClass])(
+      using summon,
+      derived.scalacheck.deriveArbitrary,
+      derived.cogen.deriveCogenShallow[Maybe[SimpleCaseClass]]
+    )
+  }
+
+  test("deriveCogenShallow prefers existing instance for ADT-subtypes") {
+    case class Foo(x: Int)
+    val customCogen: Cogen[Maybe.Defined[Foo]] = Cogen(_ => 13L)
+
+    val expectedCogen: Cogen[Maybe[Foo]] =
+      Cogen { (seed, value) =>
+        value match
+          case d: Maybe.Defined[Foo] =>
+            Cogen.perturb(
+              Cogen.perturb[Maybe.Defined[Foo]](
+                seed,
+                d
+              )(customCogen),
+              0
+            )
+          case Maybe.Undefined =>
+            perturbSingletonInSum(1, seed, Maybe.Undefined)
+      }
+    given Cogen[Maybe.Defined[Foo]] = customCogen
+    equalCogenValues(expectedCogen)(
+      using summon,
+      derived.scalacheck.deriveArbitrary,
+      derived.cogen.deriveCogenShallow[Maybe[Foo]]
+    )
+  }
+
+  test("deriveCogenShallow supports nested sealed traits (with recursion)") {
+    equalCogenValues(NestedSumsRecursiveList.expectedCogen[Int])(
+      using summon,
+      derived.scalacheck.deriveArbitrary,
+      derived.cogen.deriveCogenShallow
+    )
+  }
+
   import derived.scalacheck.given
 
   property("perturbs to same seeds as non-derived expected Cogen (for simple ADT)") {

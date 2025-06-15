@@ -174,6 +174,23 @@ object AbstractSubClass:
         n <- SimpleCaseClass.expectedGen
       } yield SubclassA(a, b, n)
 
+    val expectedCogen: Cogen[SubclassA] =
+      Cogen { (seed, value) =>
+        perturb[Unit](
+          perturb[SimpleCaseClass](
+            perturb[String](
+              perturb[Int](
+                seed,
+                value.a
+              ),
+              value.b
+            ),
+            value.nestedSimple
+          )(using SimpleCaseClass.expectedCogen),
+          ()
+        )
+      }
+
     val expectedShrink: Shrink[SubclassA] =
       given Shrink[SimpleCaseClass] = SimpleCaseClass.expectedShrink
       given shrinkTuple: Shrink[(Int, String, SimpleCaseClass)] = Shrink.shrinkTuple3

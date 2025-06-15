@@ -21,13 +21,15 @@ object CogenSumInstanceSummoner
     summonFrom {
       case c: Cogen[Elem] =>
         c
-      case m: Mirror.Of[Elem] =>
-        cogen.deriveCogen[Elem](using m)
+      case s: Mirror.SumOf[Elem] =>
+        CogenDeriving.cogenSum(s)
+      case p: Mirror.ProductOf[Elem] =>
+        CogenDeriving.cogenProduct(p)
     }
 
-private trait CogenDeriving:
+private[derived] object CogenDeriving:
 
-  private inline def cogenSum[T](s: Mirror.SumOf[T]): Cogen[T] =
+  inline def cogenSum[T](s: Mirror.SumOf[T]): Cogen[T] =
     @implicitNotFound(
       "Derivation failed. No given instance of type Summoner[${E}] was found. This is most likely due to no Cogen[${E}] being available"
     )
@@ -59,27 +61,38 @@ private trait CogenDeriving:
         Cogen.cogenUnit.contramap(_ => ())
     }
 
-  private inline def cogenProduct[T](p: Mirror.ProductOf[T]): Cogen[T] =
+  inline def cogenProduct[T](p: Mirror.ProductOf[T]): Cogen[T] =
     def cogens = summonAll[Tuple.Map[p.MirroredElemTypes, Cogen]]
     lazy val cogenTuple = tupleInstance(cogens.toList.asInstanceOf[List[Cogen[?]]])
       .asInstanceOf[Cogen[p.MirroredElemTypes]]
     cogenTuple.contramap[T](productToMirroredElemTypes(p)(_))
 
+private trait CogenDeriving:
+
+  final inline def deriveCogenShallow[T](using m: Mirror.Of[T]): Cogen[T] =
+    inline m match
+      case s: Mirror.SumOf[T] =>
+        // given to support recursion
+        given cogen: Cogen[T] = CogenDeriving.cogenSum(s)
+        cogen
+      case p: Mirror.ProductOf[T] =>
+        CogenDeriving.cogenProduct(p)
+
   @annotation.nowarn("msg=unused") // needed due to https://github.com/lampepfl/dotty/issues/18564
   inline final def deriveCogen[T](using m: Mirror.Of[T]): Cogen[T] =
     import io.github.martinhh.derived.cogen.anyGivenCogen
     given cogen: Cogen[T] = inline m match
-      case s: Mirror.SumOf[T]     => cogenSum(s)
-      case p: Mirror.ProductOf[T] => cogenProduct(p)
+      case s: Mirror.SumOf[T]     => CogenDeriving.cogenSum(s)
+      case p: Mirror.ProductOf[T] => CogenDeriving.cogenProduct(p)
     cogen
 
   inline final given anyGivenCogen[T]: Cogen[T] =
     summonFrom {
       case c: Cogen[T]        => c
       case s: Mirror.SumOf[T] =>
-        given cogen: Cogen[T] = cogenSum(s)
+        given cogen: Cogen[T] = CogenDeriving.cogenSum(s)
         cogen
       case p: Mirror.ProductOf[T] =>
-        given cogen: Cogen[T] = cogenProduct(p)
+        given cogen: Cogen[T] = CogenDeriving.cogenProduct(p)
         cogen
     }

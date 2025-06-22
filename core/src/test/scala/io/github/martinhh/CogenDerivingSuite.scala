@@ -149,6 +149,81 @@ class CogenDerivingSuite extends test.CogenSuite:
     )
   }
 
+  test("deriveCogenExtraShallow succeeds for simple case class") {
+    equalCogenValues(SimpleCaseClass.expectedCogen)(
+      using summon,
+      derived.scalacheck.deriveArbitrary,
+      derived.cogen.deriveCogenExtraShallow
+    )
+  }
+
+  test("deriveCogenExtraShallow fails for case class containing another case class") {
+    val error: String =
+      compileErrors("derived.cogen.deriveCogenExtraShallow[AbstractSubClass.SubclassA]")
+    assert(
+      error.contains(
+        "No given instance of type org.scalacheck.Cogen[io.github.martinhh.SimpleCaseClass] was found"
+      )
+    )
+  }
+
+  test(
+    "deriveCogenExtraShallow succeeds for case class containing another case class if an instance for that is available"
+  ) {
+    given Cogen[SimpleCaseClass] = SimpleCaseClass.expectedCogen
+
+    equalCogenValues(AbstractSubClass.SubclassA.expectedCogen)(
+      using summon,
+      derived.scalacheck.deriveArbitrary,
+      derived.cogen.deriveCogenExtraShallow
+    )
+  }
+
+  test("deriveCogenExtraShallow fails for simple adt if no instances for that are in scope") {
+    val error: String =
+      compileErrors("derived.cogen.deriveCogenExtraShallow[SimpleADT]")
+    assert(
+      error.contains(
+        "Derivation failed. No given instance of type Summoner[io.github.martinhh.SimpleCaseObject.type] was found." +
+          " This is most likely due to no Cogen[io.github.martinhh.SimpleCaseObject.type] being available"
+      )
+    )
+  }
+
+  test(
+    "deriveCogenExtraShallow succeeds for simple ADT if subclasses are derivable via deriveShallow"
+  ) {
+    given cogenSimpleCaseObject: Cogen[SimpleCaseObject.type] = Cogen { _ => 13L }
+    given cogenSimpleCaseClass: Cogen[SimpleCaseClass] = SimpleCaseClass.expectedCogen
+
+    val expectedCogen: Cogen[SimpleADT] =
+      import Cogen.perturb
+      Cogen { (seed, value) =>
+        value match
+          case SimpleCaseObject =>
+            perturb(
+              perturb(
+                seed,
+                SimpleCaseObject
+              )(cogenSimpleCaseObject),
+              0
+            )
+          case cc: SimpleCaseClass =>
+            perturb(
+              perturb[SimpleCaseClass](
+                seed,
+                cc
+              )(cogenSimpleCaseClass),
+              1
+            )
+      }
+    equalCogenValues(expectedCogen)(
+      using summon,
+      derived.scalacheck.deriveArbitrary,
+      derived.cogen.deriveCogenShallow
+    )
+  }
+
   import derived.scalacheck.given
 
   property("perturbs to same seeds as non-derived expected Cogen (for simple ADT)") {

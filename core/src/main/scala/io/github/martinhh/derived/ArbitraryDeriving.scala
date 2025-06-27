@@ -133,6 +133,7 @@ private object Gens:
  *                   `buildSumGen` for its usage.
  */
 private[martinhh] trait ArbitraryDeriving[SumConfig[_]]:
+  self =>
 
   /**
    * The logic for combining the `Gen`-instances of the various subtypes of a sum type (i.e. of a sealed trait or enum).
@@ -242,7 +243,7 @@ private[martinhh] trait ArbitraryDeriving[SumConfig[_]]:
   final inline def deriveArbitrary[T](using m: Mirror.Of[T]): Arbitrary[T] =
     // make derivation available as given (so that dependencies of factories like
     // Arbitrary.arbContainer can be derived):
-    import scalacheck.anyGivenArbitrary
+    import self.anyGivenArbitrary
     inline m match
       case s: Mirror.SumOf[T] =>
         // given to support recursion (without falling back to the above import

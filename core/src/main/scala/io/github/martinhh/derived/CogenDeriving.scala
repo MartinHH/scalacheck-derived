@@ -97,6 +97,7 @@ private[derived] object CogenDeriving:
     cogenTuple.contramap[T](productToMirroredElemTypes(p)(_))
 
 private trait CogenDeriving:
+  self =>
 
   /**
    * Derive a `Cogen[T]`, ignoring any `given Cogen[T]` that is already in scope.
@@ -139,7 +140,7 @@ private trait CogenDeriving:
    */
   @annotation.nowarn("msg=unused") // needed due to https://github.com/lampepfl/dotty/issues/18564
   inline final def deriveCogen[T](using m: Mirror.Of[T]): Cogen[T] =
-    import io.github.martinhh.derived.cogen.anyGivenCogen
+    import self.anyGivenCogen
     given cogen: Cogen[T] = inline m match
       case s: Mirror.SumOf[T]     => CogenDeriving.cogenSum[T, DefaultCogenSummoner](s)
       case p: Mirror.ProductOf[T] => CogenDeriving.cogenProduct(p)

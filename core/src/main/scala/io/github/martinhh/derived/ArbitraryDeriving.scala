@@ -132,7 +132,7 @@ private object Gens:
  *                   subtypes of a sum type (i.e. of a sealed trait or enum) are combined to a single `Gen`. See
  *                   `buildSumGen` for its usage.
  */
-private[martinhh] trait ArbitraryDeriving[SumConfig[_]]:
+trait ArbitraryDeriving[SumConfig[_]]:
   self =>
 
   /**
@@ -282,7 +282,7 @@ private[martinhh] trait ArbitraryDeriving[SumConfig[_]]:
 /**
  * Default implementation of derivation of `Arbitrary`s.
  */
-private trait DefaultArbitraryDeriving extends ArbitraryDeriving[RecursionFallback]:
+trait DefaultArbitraryDeriving extends ArbitraryDeriving[RecursionFallback]:
 
   override final protected def buildSumGen[A](
     gens: List[Gen[A]],

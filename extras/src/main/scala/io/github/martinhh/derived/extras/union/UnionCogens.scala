@@ -22,7 +22,7 @@ private def toCogen[A](utc: UnionTypedCogens[A]): Cogen[A] =
     seedOpt.get
   }
 
-private trait UnionCogens:
+trait UnionCogens:
   transparent inline final given unionTypedCogensMacro[X]: UnionTypedCogens[X] =
     io.github.martinhh.derived.extras.union.unionTypedCogensMacro
 

@@ -87,6 +87,19 @@ Note that this still does not rule out that depending on the data structure, a s
 the recursion depth exceeds the configured `size` (e.g. in case of a tree where each node has a large number of
 branches).
 
+## Alternative Solution: override buildSumGen
+
+Since version 0.10.0, it is possible to fully customize the logic for how the `Gen`-instances
+of the subtypes of a sum type are combined to a `Gen` for the parent type. You can do so by extending the
+`ArbitraryDeriving` trait and overriding `buildSumGen`.
+
+For further details, look into the corresponding scaladoc and code.
+
+Examples for how to use this can also be found in the corresponding
+[unit tests](../core/src/test/scala/io/github/martinhh/ConfiguredArbitraryDerivingSuite.scala), but be aware that the
+combination logic in those test examples is very test-specific and not something one would want to use for real
+`Gen`-/`Arbitrary`-instances.
+
 ## Further mitigations
 
 Alternative/further ways to mitigate this:

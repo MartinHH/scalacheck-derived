@@ -96,7 +96,7 @@ private[derived] object CogenDeriving:
       .asInstanceOf[Cogen[p.MirroredElemTypes]]
     cogenTuple.contramap[T](productToMirroredElemTypes(p)(_))
 
-private trait CogenDeriving:
+trait CogenDeriving:
   self =>
 
   /**

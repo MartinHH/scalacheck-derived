@@ -8,7 +8,7 @@ private type TypedShrink[A] = TypedTypeClass[Shrink, A]
 
 private type UnionTypedShrinks[A] = UnionTypeClasses[TypedShrink, A]
 
-private trait UnionShrinks:
+trait UnionShrinks:
 
   @annotation.nowarn("cat=deprecation")
   private def toShrink[A](uts: UnionTypedShrinks[A]): Shrink[A] =

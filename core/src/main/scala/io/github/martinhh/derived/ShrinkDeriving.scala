@@ -28,6 +28,7 @@ private object ShrinkSumInstanceSummoner
     }
 
 private trait ShrinkDeriving:
+  self =>
 
   private inline def shrinkSum[T](s: Mirror.SumOf[T]): Shrink[T] =
     // note that this will most certainly never come to effect due to `org.scalacheck.Shrink.shrinkAny]`
@@ -83,7 +84,7 @@ private trait ShrinkDeriving:
 
   @annotation.nowarn("msg=unused") // needed due to https://github.com/lampepfl/dotty/issues/18564
   inline final def deriveShrink[T](using m: Mirror.Of[T]): Shrink[T] =
-    import io.github.martinhh.derived.shrink.anyGivenShrink
+    import self.anyGivenShrink
     given shrink: Shrink[T] = inline m match
       case s: Mirror.SumOf[T]     => shrinkSum(s)
       case p: Mirror.ProductOf[T] => shrinkProduct(p)

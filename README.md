@@ -26,7 +26,7 @@ libraryDependencies ++= Seq(
 
 ## Usage
 
-There are three ways of using this library. Let's look at them by examples using the following
+There are four ways of using this library. Let's look at them by examples using the following
 (example) data structure:
 
 ```
@@ -90,6 +90,28 @@ given arbLibItem: Arbitrary[LibItem] = deriveArbitraryShallow
 the line `given arbColor: Arbitrary[Color] = deriveArbitraryShallow` is required because without a 
 `given Arbitrary[Color]` in scope, derivation of `Arbitrary[LibItem]` would fail.
 
+### c) derive explicitly ("extra-shallow")
+
+If you'd like even more control over what is being derived, you can use
+`io.github.martinhh.derived.scalacheck.deriveArbitraryExtraShallow` to explicitly
+derive instances:
+
+```
+import io.github.martinhh.derived.scalacheck.deriveArbitraryExtraShallow
+import org.scalacheck.Arbitrary
+import org.scalacheck.Gen
+
+// given instances for each value of color:
+given arbColor[C <: Color](using v: ValueOf[C]): Arbitrary[C] = Arbitrary(Gen.const(v.value))
+
+given arbColor: Arbitrary[Color] = deriveArbitraryExtraShallow
+given arbMagazine: Arbitrary[Magazine] = deriveArbitraryExtraShallow
+given arbBook: Arbitrary[Bool] = deriveArbitraryExtraShallow
+given arbLibItem: Arbitrary[LibItem] = deriveArbitraryExtraShallow
+```
+
+`deriveArbitraryExtraShallow` will not derive missing instances for members of case classes & tuples nor missing
+subtypes of sealed traits or enums, so you have to provide a given instance for each of them explicitly.
 
 ### Deriving `Shrink`-instances
 

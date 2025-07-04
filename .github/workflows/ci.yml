@@ -14,13 +14,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Set up Clang
-        # workaround for https://github.com/actions/runner-images/issues/12435
-        if: runner.os == 'Windows'
-        uses: egor-tensin/setup-clang@v1.4
-        with:
-          version: 19.1.7
-          platform: x64
       - name: restore cache
         uses: coursier/cache-action@v6
       - name: setup sbt

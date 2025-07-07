@@ -90,7 +90,7 @@ given arbLibItem: Arbitrary[LibItem] = deriveArbitraryShallow
 the line `given arbColor: Arbitrary[Color] = deriveArbitraryShallow` is required because without a 
 `given Arbitrary[Color]` in scope, derivation of `Arbitrary[LibItem]` would fail.
 
-### c) derive explicitly ("extra-shallow")
+### d) derive explicitly ("extra-shallow")
 
 If you'd like even more control over what is being derived, you can use
 `io.github.martinhh.derived.scalacheck.deriveArbitraryExtraShallow` to explicitly

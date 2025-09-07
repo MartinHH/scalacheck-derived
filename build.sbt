@@ -25,7 +25,7 @@ def sharedSettings(scalaV: String = "3.3.6") = Seq(
     options.filterNot(productionOnlyOptions) :+ "-Wunused:imports"
   },
   libraryDependencies ++= Seq(
-    "org.scalacheck" %%% "scalacheck" % "1.18.1",
+    "org.scalacheck" %%% "scalacheck" % "1.19.0",
     "org.scalameta" %%% "munit" % "1.1.1" % Test,
     "org.scalameta" %%% "munit-scalacheck" % "1.1.0" % Test
   ),

@@ -2,7 +2,6 @@ package io.github.martinhh.deriving
 
 import scala.compiletime.erasedValue
 import scala.compiletime.error
-import scala.compiletime.summonFrom
 import scala.compiletime.summonInline
 
 // helper typeclass that allows us to use summonAll in derivation for sum-types

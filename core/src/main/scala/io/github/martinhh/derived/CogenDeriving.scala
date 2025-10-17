@@ -5,7 +5,6 @@ import org.scalacheck.Cogen
 
 import scala.annotation.implicitNotFound
 import scala.compiletime.summonAll
-import scala.compiletime.summonInline
 import scala.compiletime.summonFrom
 import scala.deriving.*
 
@@ -138,7 +137,6 @@ trait CogenDeriving:
    * Note that this will recursively derive any missing `Cogen`-instances for any members/subtypes
    * of `T` (unless such instances are already available in implicit scope).
    */
-  @annotation.nowarn("msg=unused") // needed due to https://github.com/lampepfl/dotty/issues/18564
   inline final def deriveCogen[T](using m: Mirror.Of[T]): Cogen[T] =
     import self.anyGivenCogen
     given cogen: Cogen[T] = inline m match

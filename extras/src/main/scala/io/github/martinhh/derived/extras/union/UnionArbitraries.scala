@@ -6,7 +6,6 @@ import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 
 import scala.annotation.implicitNotFound
-import scala.compiletime.summonInline
 
 private type UnionArbs[A] = UnionTypeClasses[Arbitrary, A]
 

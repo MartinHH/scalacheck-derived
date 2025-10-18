@@ -7,7 +7,6 @@ import scala.annotation.implicitNotFound
 import scala.annotation.tailrec
 import scala.compiletime.constValue
 import scala.compiletime.summonAll
-import scala.compiletime.summonInline
 import scala.compiletime.summonFrom
 import scala.deriving.*
 
@@ -82,7 +81,6 @@ trait ShrinkDeriving:
       }
     Shrink.xmap[p.MirroredElemTypes, T](p.fromTuple(_), productToMirroredElemTypes(p)(_))
 
-  @annotation.nowarn("msg=unused") // needed due to https://github.com/lampepfl/dotty/issues/18564
   inline final def deriveShrink[T](using m: Mirror.Of[T]): Shrink[T] =
     import self.anyGivenShrink
     given shrink: Shrink[T] = inline m match

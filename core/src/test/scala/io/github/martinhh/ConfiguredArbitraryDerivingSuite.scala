@@ -1,6 +1,5 @@
 package io.github.martinhh
 
-import io.github.martinhh.ABC.A
 import io.github.martinhh.derived.ArbitraryDeriving
 import org.scalacheck.Gen
 

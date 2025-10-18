@@ -8,7 +8,6 @@ import org.scalacheck.Gen
 import scala.annotation.implicitNotFound
 import scala.compiletime.summonAll
 import scala.compiletime.summonFrom
-import scala.compiletime.summonInline
 import scala.deriving.*
 
 private sealed trait Gens[T]
@@ -239,7 +238,6 @@ trait ArbitraryDeriving[SumConfig[_]]:
    *   given Arbitrary[Point] = deriveArbitrary
    * }}}
    */
-  @annotation.nowarn("msg=unused") // needed due to https://github.com/lampepfl/dotty/issues/18564
   final inline def deriveArbitrary[T](using m: Mirror.Of[T]): Arbitrary[T] =
     // make derivation available as given (so that dependencies of factories like
     // Arbitrary.arbContainer can be derived):

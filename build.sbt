@@ -26,7 +26,7 @@ def sharedSettings(scalaV: String = "3.3.7") = Seq(
   },
   libraryDependencies ++= Seq(
     "org.scalacheck" %%% "scalacheck" % "1.19.0",
-    "org.scalameta" %%% "munit" % "1.3.0" % Test,
+    "org.scalameta" %%% "munit" % "1.3.2" % Test,
     "org.scalameta" %%% "munit-scalacheck" % "1.3.0" % Test
   ),
   pomPostProcess := PomPostProcessor.removeTestDependencies(sLog.value)

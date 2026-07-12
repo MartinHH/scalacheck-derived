@@ -60,8 +60,8 @@ lazy val test34 =
     .dependsOn(core % "compile->compile;test->test")
     .settings(sharedSettings("3.4.0"))
     .settings(
-      name := "scalacheck-derived-test-3.4.0",
-      description := "A module for tests using a different scala version (i.e. 3.4.0)",
+      name := "scalacheck-derived-test-3.4.3",
+      description := "A module for tests using a different scala version (i.e. 3.4.3)",
       publish / skip := true
     )
 

@@ -30,7 +30,7 @@ case class BigCaseClass(
 /**
  * Tests testing derivation for larger type (with more than 32 MirroredElemTypes).
  *
- * (This is only possible with Scala 3.4.0 or higher).
+ * (This is only possible with Scala 3.4.3 or higher).
  */
 // TODO: integrate into regular tests once we skip to next LTS (3.7.x)
 class LargeElemTypesSuite extends test.ArbitrarySuite with test.CogenSuite with test.ShrinkSuite:
@@ -39,42 +39,42 @@ class LargeElemTypesSuite extends test.ArbitrarySuite with test.CogenSuite with 
   // that no exceptions are thrown at runtime:
 
   test(
-    "(with scala 3.4.0 or higher) supports derivation of Arbitrary instances for case classes with more" +
+    "(with scala 3.4.3 or higher) supports derivation of Arbitrary instances for case classes with more" +
       " than 32 fields (while -Xmax-inlines=32)"
   ) {
     equalArbitraryValues(summon[Arbitrary[BigCaseClass]].arbitrary)
   }
 
   test(
-    "(with scala 3.4.0 or higher) supports derivation of Cogen instances for case classes with more" +
+    "(with scala 3.4.3 or higher) supports derivation of Cogen instances for case classes with more" +
       " than 32 fields (while -Xmax-inlines=32)"
   ) {
     equalCogenValues(summon[Cogen[BigCaseClass]])
   }
 
   test(
-    "(with scala 3.4.0 or higher) supports derivation of Shrink instances for case classes with more" +
+    "(with scala 3.4.3 or higher) supports derivation of Shrink instances for case classes with more" +
       " than 32 fields (while -Xmax-inlines=32)"
   ) {
     equalShrinkValues(summon[Shrink[BigCaseClass]])
   }
 
   test(
-    "(with scala 3.4.0 or higher) supports derivation of Arbitrary instances for enum with more" +
+    "(with scala 3.4.3 or higher) supports derivation of Arbitrary instances for enum with more" +
       " than 32 members (while -Xmax-inlines=32)"
   ) {
     equalArbitraryValues(summon[Arbitrary[BigEnum]].arbitrary)
   }
 
   test(
-    "(with scala 3.4.0 or higher) supports derivation of Cogen instances for enum with more" +
+    "(with scala 3.4.3 or higher) supports derivation of Cogen instances for enum with more" +
       " than 32 members (while -Xmax-inlines=32)"
   ) {
     equalCogenValues(summon[Cogen[BigEnum]])
   }
 
   test(
-    "(with scala 3.4.0 or higher) supports derivation of Shrink instances for enum with more" +
+    "(with scala 3.4.3 or higher) supports derivation of Shrink instances for enum with more" +
       " than 32 members (while -Xmax-inlines=32)"
   ) {
     equalShrinkValues(summon[Shrink[BigEnum]])

@@ -16,7 +16,7 @@ private def unionTypedTypeClasses[TC[_]: Type, X: Type](
   import q.reflect.*
   TypeRepr.of[X] match
     case OrType(l, r) =>
-      (l.asType, r.asType) match
+      ((l.asType, r.asType): @unchecked) match
         case ('[a], '[b]) =>
           val exprOpt: Option[Expr[UnionTypeClasses[TC, X]]] =
             for {
@@ -29,11 +29,11 @@ private def unionTypedTypeClasses[TC[_]: Type, X: Type](
     case x =>
       report.errorAndAbort(s"${x.show} is not a union type")
 
-private transparent inline given unionTypedCogensMacro[X]: UnionTypedCogens[X] =
+transparent inline given unionTypedCogensMacro[X]: UnionTypedCogens[X] =
   ${ unionTypedTypeClasses[TypedCogen, X] }
 
-private transparent inline given unionTypedShrinksMacro[X]: UnionTypedShrinks[X] =
+transparent inline given unionTypedShrinksMacro[X]: UnionTypedShrinks[X] =
   ${ unionTypedTypeClasses[TypedShrink, X] }
 
-private transparent inline given unionTypedGensMacro[X]: UnionArbs[X] =
+transparent inline given unionTypedGensMacro[X]: UnionArbs[X] =
   ${ unionTypedTypeClasses[Arbitrary, X] }

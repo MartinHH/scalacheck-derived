@@ -15,12 +15,19 @@ inThisBuild(
   )
 )
 
+val scalaLts = "3.3.8"
+val scalaLatest = "3.10.0"
+
 val productionOnlyOptions = Set("-Wunused:all")
 
-def sharedSettings(scalaV: String = "3.3.8") = Seq(
+def sharedSettings(scalaV: String = scalaLts) = Seq(
   scalaVersion := scalaV,
+  crossScalaVersions := Seq(scalaLts, scalaLatest),
   testFrameworks += new TestFramework("munit.Framework"),
-  scalacOptions ++= productionOnlyOptions.toSeq :+ "-Xfatal-warnings",
+  scalacOptions ++= productionOnlyOptions.toSeq ++ Seq(
+    "-Werror",
+    "-Wconf:msg=Implicit parameters:s"
+  ),
   Test / scalacOptions ~= { options =>
     options.filterNot(productionOnlyOptions) :+ "-Wunused:imports"
   },
@@ -62,6 +69,7 @@ lazy val test34 =
     .settings(
       name := "scalacheck-derived-test-3.4.0",
       description := "A module for tests using a different scala version (i.e. 3.4.0)",
+      crossScalaVersions := Seq("3.4.0", scalaLatest),
       publish / skip := true
     )
 

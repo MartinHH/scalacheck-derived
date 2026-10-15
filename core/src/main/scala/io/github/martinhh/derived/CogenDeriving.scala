@@ -12,9 +12,16 @@ import scala.deriving.*
  * Default implementation of `SumInstanceSummoner` for `Cogen`s.
  *
  * Derives missing instances for products.
+ *
+ * ATTENTION: this not meant to be treated as public API - do not use this directly,
+ * it is only public because otherwise, implicit resolution would fail.
  */
 trait DefaultCogenSummoner[T, Elem] extends SumInstanceSummoner[T, Elem, Cogen]
 
+/**
+ * ATTENTION: this not meant to be treated as public API - do not use this directly,
+ * it is only public because otherwise, implicit resolution would fail.
+ */
 object DefaultCogenSummoner extends SumInstanceSummonerCompanion[Cogen, DefaultCogenSummoner]:
   protected def apply[T, Elem](makeCogen: => Cogen[Elem]): DefaultCogenSummoner[T, Elem] =
     new DefaultCogenSummoner[T, Elem]:
@@ -34,9 +41,16 @@ object DefaultCogenSummoner extends SumInstanceSummonerCompanion[Cogen, DefaultC
  * "Extra-shallow" implementation of `SumInstanceSummoner` for `Cogen`s.
  *
  * Does not derive missing instances for products.
+ *
+ * ATTENTION: this not meant to be treated as public API - do not use this directly,
+ * it is only public because otherwise, implicit resolution would fail.
  */
 trait ExtraShallowCogenSummoner[T, Elem] extends SumInstanceSummoner[T, Elem, Cogen]
 
+/**
+ * ATTENTION: this not meant to be treated as public API - do not use this directly,
+ * it is only public because otherwise, implicit resolution would fail.
+ */
 object ExtraShallowCogenSummoner extends SumInstanceSummonerCompanion[Cogen, DefaultCogenSummoner]:
   protected def apply[T, Elem](makeCogen: => Cogen[Elem]): DefaultCogenSummoner[T, Elem] =
     new DefaultCogenSummoner[T, Elem]:

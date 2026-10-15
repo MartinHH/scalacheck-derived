@@ -21,9 +21,16 @@ private case class SingleGen[T](tag: Gens.TypeId, gen: Gen[T]) extends Gens[T]
  * Default implementation of `SumInstanceSummoner` for `Gens`.
  *
  * Derives missing instances for products.
+ *
+ * ATTENTION: this not meant to be treated as public API - do not use this directly,
+ * it is only public because otherwise, implicit resolution would fail.
  */
 trait DefaultGensSummoner[T, Elem] extends SumInstanceSummoner[T, Elem, Gens]
 
+/**
+ * ATTENTION: this not meant to be treated as public API - do not use this directly,
+ * it is only public because otherwise, implicit resolution would fail.
+ */
 object DefaultGensSummoner extends SumInstanceSummonerCompanion[Gens, DefaultGensSummoner]:
   protected def apply[T, Elem](makeGens: => Gens[Elem]): DefaultGensSummoner[T, Elem] =
     new DefaultGensSummoner[T, Elem]:
@@ -46,9 +53,16 @@ object DefaultGensSummoner extends SumInstanceSummonerCompanion[Gens, DefaultGen
  * "Extra-shallow" implementation of `SumInstanceSummoner` for `Gens`.
  *
  * Does not derive missing instances for products.
+ *
+ * ATTENTION: this not meant to be treated as public API - do not use this directly,
+ * it is only public because otherwise, implicit resolution would fail.
  */
 trait ExtraShallowGensSummoner[T, Elem] extends SumInstanceSummoner[T, Elem, Gens]
 
+/**
+ * ATTENTION: this not meant to be treated as public API - do not use this directly,
+ * it is only public because otherwise, implicit resolution would fail.
+ */
 object ExtraShallowGensSummoner
   extends SumInstanceSummonerCompanion[Gens, ExtraShallowGensSummoner]:
   protected def apply[T, Elem](makeGens: => Gens[Elem]): ExtraShallowGensSummoner[T, Elem] =

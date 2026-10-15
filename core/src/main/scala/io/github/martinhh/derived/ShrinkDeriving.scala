@@ -10,8 +10,16 @@ import scala.compiletime.summonAll
 import scala.compiletime.summonFrom
 import scala.deriving.*
 
+/**
+ * ATTENTION: this not meant to be treated as public API - do not use this directly,
+ * it is only public because otherwise, implicit resolution would fail.
+ */
 trait ShrinkSumInstanceSummoner[T, Elem] extends SumInstanceSummoner[T, Elem, Shrink]
 
+/**
+ * ATTENTION: this not meant to be treated as public API - do not use this directly,
+ * it is only public because otherwise, implicit resolution would fail.
+ */
 object ShrinkSumInstanceSummoner
   extends SumInstanceSummonerCompanion[Shrink, ShrinkSumInstanceSummoner]:
   protected def apply[T, Elem](makeShrink: => Shrink[Elem]): ShrinkSumInstanceSummoner[T, Elem] =

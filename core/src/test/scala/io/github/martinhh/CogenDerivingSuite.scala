@@ -127,7 +127,7 @@ class CogenDerivingSuite extends test.CogenSuite:
               Cogen.perturb[Maybe.Defined[Foo]](
                 seed,
                 d
-              )(customCogen),
+              )(using customCogen),
               0
             )
           case Maybe.Undefined =>
@@ -205,7 +205,7 @@ class CogenDerivingSuite extends test.CogenSuite:
               perturb(
                 seed,
                 SimpleCaseObject
-              )(cogenSimpleCaseObject),
+              )(using cogenSimpleCaseObject),
               0
             )
           case cc: SimpleCaseClass =>
@@ -213,7 +213,7 @@ class CogenDerivingSuite extends test.CogenSuite:
               perturb[SimpleCaseClass](
                 seed,
                 cc
-              )(cogenSimpleCaseClass),
+              )(using cogenSimpleCaseClass),
               1
             )
       }

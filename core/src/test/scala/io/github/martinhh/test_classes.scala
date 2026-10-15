@@ -158,7 +158,7 @@ sealed trait ComplexADTWithNestedMembers
 
 case object AnotherCaseObject extends ComplexADTWithNestedMembers
 
-sealed abstract class AbstractSubClass[N <: SimpleADT](abc: ABC)
+sealed abstract class AbstractSubClass[+N <: SimpleADT](abc: ABC)
   extends ComplexADTWithNestedMembers:
   def nestedSimple: N
 

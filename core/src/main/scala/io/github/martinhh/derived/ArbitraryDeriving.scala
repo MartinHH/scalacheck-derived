@@ -22,9 +22,9 @@ private case class SingleGen[T](tag: Gens.TypeId, gen: Gen[T]) extends Gens[T]
  *
  * Derives missing instances for products.
  */
-private trait DefaultGensSummoner[T, Elem] extends SumInstanceSummoner[T, Elem, Gens]
+trait DefaultGensSummoner[T, Elem] extends SumInstanceSummoner[T, Elem, Gens]
 
-private object DefaultGensSummoner extends SumInstanceSummonerCompanion[Gens, DefaultGensSummoner]:
+object DefaultGensSummoner extends SumInstanceSummonerCompanion[Gens, DefaultGensSummoner]:
   protected def apply[T, Elem](makeGens: => Gens[Elem]): DefaultGensSummoner[T, Elem] =
     new DefaultGensSummoner[T, Elem]:
       def deriveOrSummonSumInstance: Gens[Elem] = makeGens
@@ -47,9 +47,9 @@ private object DefaultGensSummoner extends SumInstanceSummonerCompanion[Gens, De
  *
  * Does not derive missing instances for products.
  */
-private trait ExtraShallowGensSummoner[T, Elem] extends SumInstanceSummoner[T, Elem, Gens]
+trait ExtraShallowGensSummoner[T, Elem] extends SumInstanceSummoner[T, Elem, Gens]
 
-private object ExtraShallowGensSummoner
+object ExtraShallowGensSummoner
   extends SumInstanceSummonerCompanion[Gens, ExtraShallowGensSummoner]:
   protected def apply[T, Elem](makeGens: => Gens[Elem]): ExtraShallowGensSummoner[T, Elem] =
     new ExtraShallowGensSummoner[T, Elem]:

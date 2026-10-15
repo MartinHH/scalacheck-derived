@@ -6,15 +6,15 @@ package io.github.martinhh.derived.extras.union
 case class InstanceWrapper[TC[_], A](instance: TC[A])
 
 // type for accumulating TypedTypeClass instances (e.g. of a union)
-private sealed trait TypeClasses[TC[_], A]:
+sealed trait TypeClasses[TC[_], A]:
   def instances: List[InstanceWrapper[TC, ? <: A]]
 
-private object TypeClasses:
+object TypeClasses:
   inline given derived[TC[_], A](using inline i: TC[A]): SingleTypeClasses[TC, A] =
     SingleTypeClasses(i)
 
-private case class SingleTypeClasses[TC[_], A](instance: TC[A]) extends TypeClasses[TC, A]:
+case class SingleTypeClasses[TC[_], A](instance: TC[A]) extends TypeClasses[TC, A]:
   override def instances: List[InstanceWrapper[TC, ? <: A]] = List(InstanceWrapper(instance))
 
-private case class UnionTypeClasses[TC[_], A](instances: List[InstanceWrapper[TC, ? <: A]])
+case class UnionTypeClasses[TC[_], A](instances: List[InstanceWrapper[TC, ? <: A]])
   extends TypeClasses[TC, A]

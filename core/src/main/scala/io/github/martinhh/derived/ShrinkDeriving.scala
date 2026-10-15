@@ -10,9 +10,9 @@ import scala.compiletime.summonAll
 import scala.compiletime.summonFrom
 import scala.deriving.*
 
-private trait ShrinkSumInstanceSummoner[T, Elem] extends SumInstanceSummoner[T, Elem, Shrink]
+trait ShrinkSumInstanceSummoner[T, Elem] extends SumInstanceSummoner[T, Elem, Shrink]
 
-private object ShrinkSumInstanceSummoner
+object ShrinkSumInstanceSummoner
   extends SumInstanceSummonerCompanion[Shrink, ShrinkSumInstanceSummoner]:
   protected def apply[T, Elem](makeShrink: => Shrink[Elem]): ShrinkSumInstanceSummoner[T, Elem] =
     new ShrinkSumInstanceSummoner[T, Elem]:

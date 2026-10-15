@@ -15,7 +15,7 @@ private def perturbSingletonInSum[T](ordinal: Int, seed: Seed, value: T) =
     perturb[T](
       seed,
       value
-    )(Cogen.cogenUnit.contramap(_ => ())),
+    )(using Cogen.cogenUnit.contramap(_ => ())),
     ordinal
   )
 
@@ -49,7 +49,7 @@ object SimpleADT:
             perturb[SimpleCaseClass](
               seed,
               cc
-            )(SimpleCaseClass.expectedCogen),
+            )(using SimpleCaseClass.expectedCogen),
             1
           )
     }
@@ -310,7 +310,7 @@ object CaseClassWithListOfCaseClass:
         perturb[List[SimpleCaseClass]](
           seed,
           value.list
-        )(cogenList(using SimpleCaseClass.expectedCogen)),
+        )(using cogenList(using SimpleCaseClass.expectedCogen)),
         ()
       )
     }
@@ -344,18 +344,18 @@ object RecursiveList:
             perturb[Cns[T]](
               seed,
               c
-            )(Cogen { (seed, value) =>
-              perturb[Unit](
-                perturb[RecursiveList[T]](
-                  perturb[T](
-                    seed,
-                    value.t
-                  ),
-                  value.ts
-                )(expectedCogen),
-                ()
-              )
-            }),
+            )(using Cogen { (seed, value) =>
+                perturb[Unit](
+                  perturb[RecursiveList[T]](
+                    perturb[T](
+                      seed,
+                      value.t
+                    ),
+                    value.ts
+                  )(using expectedCogen),
+                  ()
+                )
+              }),
             0
           )
         case Nl =>
@@ -370,7 +370,7 @@ object RecursiveList:
           .xmap[(T, RecursiveList[T]), Cns[T]](
             { case (t, ts) => Cns(t, ts) },
             cns => (cns.t, cns.ts)
-          )(Shrink.shrinkTuple2(using shrinkT, expectedShrink))
+          )(using Shrink.shrinkTuple2(using shrinkT, expectedShrink))
           .shrink(c)
       case Nl => Stream.empty
     }
@@ -402,18 +402,18 @@ object NestedSumsRecursiveList:
               perturb[Cns[T]](
                 seed,
                 c
-              )(Cogen { (seed, value) =>
-                perturb[Unit](
-                  perturb[NestedSumsRecursiveList[T]](
-                    perturb[T](
-                      seed,
-                      value.t
-                    ),
-                    value.ts
-                  )(expectedCogen),
-                  ()
-                )
-              }),
+              )(using Cogen { (seed, value) =>
+                  perturb[Unit](
+                    perturb[NestedSumsRecursiveList[T]](
+                      perturb[T](
+                        seed,
+                        value.t
+                      ),
+                      value.ts
+                    )(using expectedCogen),
+                    ()
+                  )
+                }),
               0 // ordinal of Cns within NotNl
             ),
             0 // ordinal of NotNl within NestedSumsRecursiveList
@@ -430,7 +430,7 @@ object NestedSumsRecursiveList:
           .xmap[(T, NestedSumsRecursiveList[T]), Cns[T]](
             { case (t, ts) => Cns(t, ts) },
             cns => (cns.t, cns.ts)
-          )(Shrink.shrinkTuple2(using shrinkT, expectedShrink))
+          )(using Shrink.shrinkTuple2(using shrinkT, expectedShrink))
           .shrink(c)
       case Nl => Stream.empty
     }
@@ -455,15 +455,15 @@ object Maybe:
             perturb[Defined[T]](
               seed,
               d
-            )(Cogen { (seed, value) =>
-              perturb[Unit](
-                perturb[T](
-                  seed,
-                  value.t
-                ),
-                ()
-              )
-            }),
+            )(using Cogen { (seed, value) =>
+                perturb[Unit](
+                  perturb[T](
+                    seed,
+                    value.t
+                  ),
+                  ()
+                )
+              }),
             0
           )
         case Undefined =>
@@ -478,7 +478,7 @@ object Maybe:
           .xmap[T, Defined[T]](
             Defined.apply,
             _.t
-          )(shrinkT)
+          )(using shrinkT)
           .shrink(d)
       case Undefined => Stream.empty
     }
@@ -504,15 +504,15 @@ object MaybeMaybe:
             perturb[IsMaybe[T]](
               seed,
               d
-            )(Cogen { (seed, value) =>
-              perturb[Unit](
-                perturb[Maybe[T]](
-                  seed,
-                  value.maybe
-                )(Maybe.expectedCogen[T]),
-                ()
-              )
-            }),
+            )(using Cogen { (seed, value) =>
+                perturb[Unit](
+                  perturb[Maybe[T]](
+                    seed,
+                    value.maybe
+                  )(using Maybe.expectedCogen[T]),
+                  ()
+                )
+              }),
             0
           )
         case IsNotMaybe =>
@@ -527,7 +527,7 @@ object MaybeMaybe:
           .xmap[Maybe[T], IsMaybe[T]](
             IsMaybe.apply,
             _.maybe
-          )(Maybe.expectedShrink(shrinkT))
+          )(using Maybe.expectedShrink(shrinkT))
           .shrink(d)
       case IsNotMaybe => Stream.empty
     }
@@ -553,7 +553,7 @@ object MaybeMaybeList:
             value.head
           ),
           value.tail
-        )(MaybeMaybe.expectedCogen[MaybeMaybeList[T]](using expectedCogen)),
+        )(using MaybeMaybe.expectedCogen[MaybeMaybeList[T]](using expectedCogen)),
         ()
       )
     }
@@ -564,7 +564,7 @@ object MaybeMaybeList:
     Shrink.xmap[(T, MaybeMaybe[MaybeMaybeList[T]]), MaybeMaybeList[T]](
       { case (head, tail) => MaybeMaybeList(head, tail) },
       mml => (mml.head, mml.tail)
-    )(shrinkTuple)
+    )(using shrinkTuple)
 
 enum DirectRecursion:
   case Continue(next: DirectRecursion)
@@ -584,7 +584,7 @@ object DirectRecursion:
               perturb[DirectRecursion](
                 seed,
                 dr
-              )(expectedCogen),
+              )(using expectedCogen),
               ()
             ),
             0
@@ -601,7 +601,7 @@ object DirectRecursion:
           .xmap[DirectRecursion, Continue](
             Continue.apply,
             _.next
-          )(expectedShrink)
+          )(using expectedShrink)
           .shrink(c)
       case Stop => Stream.empty
     }

@@ -25,8 +25,7 @@ def sharedSettings(scalaV: String = scalaLts) = Seq(
   crossScalaVersions := Seq(scalaLts, scalaLatest),
   testFrameworks += new TestFramework("munit.Framework"),
   scalacOptions ++= productionOnlyOptions.toSeq ++ Seq(
-    "-Werror",
-    "-Wconf:msg=Implicit parameters:s"
+    "-Werror"
   ),
   Test / scalacOptions ~= { options =>
     options.filterNot(productionOnlyOptions) :+ "-Wunused:imports"

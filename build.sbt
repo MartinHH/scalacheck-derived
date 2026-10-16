@@ -72,5 +72,12 @@ lazy val test34 =
       publish / skip := true
     )
 
-// do not publish root project
-publish / skip := true
+lazy val root = (project in file("."))
+  .aggregate(core.jvm, core.js, core.native)
+  .aggregate(extras.jvm, extras.js, extras.native)
+  .aggregate(test34.jvm, test34.js, test34.native)
+  .settings(
+    // crossScalaVersions must be set to Nil on the aggregating project
+    crossScalaVersions := Nil,
+    publish / skip := true
+  )

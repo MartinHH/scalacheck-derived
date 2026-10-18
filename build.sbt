@@ -1,14 +1,14 @@
 inThisBuild(
   Seq(
     organization := "io.github.martinhh",
-    homepage := Some(url("https://github.com/martinhh/scalacheck-derived")),
+    homepage := Some(uri("https://github.com/martinhh/scalacheck-derived")),
     licenses := Seq(License.Apache2),
     developers := List(
       Developer(
         "martinhh",
         "Martin Hansen",
         "code@martin-hansen.de",
-        url("https://martinhh.github.io/")
+        uri("https://martinhh.github.io/")
       )
     ),
     versionScheme := Some("semver-spec")

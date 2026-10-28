@@ -15,7 +15,7 @@ inThisBuild(
   )
 )
 
-val scalaLts = "3.3.8"
+val scalaLts = "3.3.9"
 val scalaLatest = "3.10.0"
 
 val productionOnlyOptions = Set("-Wunused:all")

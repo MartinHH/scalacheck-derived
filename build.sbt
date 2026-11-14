@@ -20,6 +20,10 @@ val scalaLatest = "3.10.0"
 
 val productionOnlyOptions = Set("-Wunused:all")
 
+// aliases to avoid redundant definitions of scala version in ci workflows:
+addCommandAlias("testLts", s"++ $scalaLts test;")
+addCommandAlias("testLatest", s"++ $scalaLatest test;")
+
 def sharedSettings(scalaV: String = scalaLts) = Seq(
   scalaVersion := scalaV,
   crossScalaVersions := Seq(scalaLts, scalaLatest),

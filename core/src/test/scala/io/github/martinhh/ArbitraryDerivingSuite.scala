@@ -34,6 +34,14 @@ class ArbitraryDerivingSuite extends test.ArbitrarySuite:
     )
   }
 
+  test(
+    "deriveArbitrary uses existing givens for subtraits of sealed traits (instead of deriving them)"
+  ) {
+    equalArbitraryValues(SealedTraitWithGivenInstanceForSubtrait.expectedGen)(
+      using derived.arbitrary.deriveArbitrary
+    )
+  }
+
   test("deriveArbitraryShallow succeeds for simple case class") {
     equalArbitraryValues(SimpleCaseClass.expectedGen)(
       using derived.arbitrary.deriveArbitraryShallow
@@ -203,6 +211,12 @@ class ArbitraryDerivingSuite extends test.ArbitrarySuite:
 
   test("given derivation does not take precedence over existing givens for subtypes of sumtypes") {
     equalArbitraryValues(ADTWithGivenInstancesForSubtype.expectedGen)
+  }
+
+  test(
+    "given derivation does not take precedence over existing givens for subtraits of sealed traits"
+  ) {
+    equalArbitraryValues(SealedTraitWithGivenInstanceForSubtrait.expectedGen)
   }
 
   test("given derivation of child-instances does not take precedence over existing givens") {
